@@ -6,4 +6,4 @@ git clone https://github.com/beijian128/framesync.git
 
 go run main.go
 
-浏览器访问 http://localhost:8080
+浏览器访问 http://localhost:8080/web/   (可打开多个客户端体验联机效果)
