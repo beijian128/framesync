@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"net/http"
+	"sync"
+
 	"github.com/beijian128/framesync/frame/appframe"
 	"github.com/beijian128/framesync/frame/appframe/master"
 	"github.com/beijian128/framesync/frame/framework/netcluster"
@@ -9,8 +12,6 @@ import (
 	"github.com/beijian128/framesync/frame/util"
 	"github.com/beijian128/framesync/services/gate"
 	"github.com/sirupsen/logrus"
-	"net/http"
-	"sync"
 )
 
 var (
@@ -110,6 +111,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		logrus.Info("web server start, listen on  :8080 ,http://localhost:8080/web/")
 		http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 		http.ListenAndServe(":8080", nil)
 	}()

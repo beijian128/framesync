@@ -1,6 +1,8 @@
 package gate
 
 import (
+	_ "net/http/pprof"
+
 	"github.com/beijian128/framesync/config"
 	"github.com/beijian128/framesync/frame/appframe"
 	appframeslb "github.com/beijian128/framesync/frame/appframe/slb"
@@ -8,7 +10,6 @@ import (
 	"github.com/beijian128/framesync/services"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	_ "net/http/pprof"
 )
 
 var SessionMgrInstance *sessionManager
@@ -34,8 +35,13 @@ func InitGateSvr(app *appframe.GateApplication, cfgFile string) error {
 	initGateMsgHandler(app)
 
 	app.OnExitHandler(Close)
+
+	ctx, cancel := context.WithCancel(context.Background())
 	app.OnRunHandler(func() {
-		FrameSyncInstance.StartSync(context.Background())
+		FrameSyncInstance.StartSync(ctx)
+	})
+	app.OnFiniHandler(func() {
+		cancel()
 	})
 	return nil
 }

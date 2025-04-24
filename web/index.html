@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帧同步联机DEMO</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a0ca3;
+            --secondary: #f72585;
+            --success: #4cc9f0;
+            --danger: #f94144;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* 头部样式 */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .intro-card p {
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .tip-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border-left: 4px solid #FFD700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .status-indicator {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            font-weight: bold;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #d03437;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #3ab0d5;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        /* 游戏容器 */
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            position: relative;
+            margin: 0 auto 20px;
+            overflow: hidden;
+        }
+
+        .player {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: left 0.1s ease, top 0.1s ease;
+        }
+
+        /* 玩家列表 */
+        #players-list {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+        }
+
+        #players-list h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 8px;
+        }
+
+        #players {
+            list-style: none;
+        }
+
+        #players li {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            #game-container {
+                height: 500px;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>帧同步联机DEMO</h1>
+            
+            <div class="intro-card">
+                <p>
+                    <span class="step-number">1</span>
+                    点击连接服务器按钮，即加入游戏。目前只有移动操作，按下 <span class="highlight">WASD</span> 键控制玩家移动。
+                </p>
+                
+                <p>
+                    <span class="step-number">2</span>
+                    开启托管模式后，程序会模拟玩家按下 <span class="highlight">WASD</span> 自动移动（完全随机）。
+                </p>
+            </div>
+            
+            <div class="tip-card">
+                <p>💡 小技巧：可以一个人开两个（或者更多）浏览器窗口，一个开托管模式，一个自己操控WASD。或者两个人在不同设备（PC）各自手动操控，体验帧同步效果！</p>
+                <p>💡 注意：如果在同一个浏览器窗口开两个标签页，其中一个可能会进入后台运行，导致定时器精度和requestAnimationFrame 回调频率​​下降。因此，多开时，请保证在不同的窗口中打开本网页</p>
+            </div>
+        </header>
+
+        <div class="status-indicator" id="status">未连接</div>
+        
+        <div class="control-panel" id="controls">
+            <button id="connectBtn" class="btn btn-primary">连接服务器</button>
+            <button id="disconnectBtn" class="btn btn-danger" disabled>断开连接</button>
+            <button id="autoPilotBtn" class="btn btn-success" disabled>开启托管</button>
+        </div>
+        
+        <div id="game-container"></div>
+        
+        <div id="players-list">
+            <h3>在线玩家:</h3>
+            <ul id="players"></ul>
+        </div>
+    </div>
+
+    <script>
+        // 消息类型定义
+        const MessageType = {
+            PLAYER_JOIN: 2097804892,
+            PLAYER_LEAVE: 2948349165,
+            PLAYER_INPUT: 782998102,
+            FRAME_SYNC: 2511531309
+        };
+
+        class Player {
+            constructor(id = 0, color, x = 400, y = 300) {
+                this.id = id;
+                this.color = color;
+                // 实际位置（服务端同步位置）
+                this.serverX = x;
+                this.serverY = y;
+                // 显示位置（用于平滑插值）
+                this.displayX = x;
+                this.displayY = y;
+                // 移动插值速度（像素/秒）
+                this.interpolationSpeed = 600;
+                this.element = null;
+                this.createElement();
+                // 最后更新时间（用于插值计算）
+                this.lastUpdateTime = performance.now();
+            }
+
+            createElement() {
+                this.element = document.createElement('div');
+                this.element.className = 'player';
+                this.element.style.backgroundColor = this.color;
+                this.element.style.left = `${this.displayX}px`;
+                this.element.style.top = `${this.displayY}px`;
+                this.element.textContent = this.id.toString().slice(-2);
+                document.getElementById('game-container').appendChild(this.element);
+            }
+
+            // 更新服务端位置（立即更新目标位置）
+            updateServerPosition(x, y) {
+                this.serverX = x;
+                this.serverY = y;
+                this.lastUpdateTime = performance.now();
+            }
+
+            // 平滑更新显示位置（每帧调用）
+            updateDisplayPosition() {
+                const now = performance.now();
+                const deltaTime = (now - this.lastUpdateTime) / 1000; // 转换为秒
+
+                // 计算与目标位置的距离
+                const dx = this.serverX - this.displayX;
+                const dy = this.serverY - this.displayY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                // 如果已经很接近，直接设置为目标位置
+                if (distance < 0.5) {
+                    this.displayX = this.serverX;
+                    this.displayY = this.serverY;
+                } else {
+                    // 插值移动（基于速度和时间）
+                    const moveDistance = this.interpolationSpeed * deltaTime;
+                    const ratio = Math.min(1, moveDistance / distance);
+
+                    this.displayX += dx * ratio;
+                    this.displayY += dy * ratio;
+                }
+
+                // 更新DOM元素位置
+                if (this.element) {
+                    this.element.style.left = `${this.displayX}px`;
+                    this.element.style.top = `${this.displayY}px`;
+                }
+
+                this.lastUpdateTime = now;
+            }
+
+            remove() {
+                if (this.element && this.element.parentNode) {
+                    this.element.parentNode.removeChild(this.element);
+                }
+            }
+        }
+
+        // 游戏客户端类
+        class GameClient {
+            constructor() {
+                this.ws = null;
+                this.players = new Map();
+                this.isConnected = false;
+                this.isAutoPilot = false;
+                this.currentDirection = null;
+                this.directionInterval = null;
+                this.inputInterval = null;
+                this.setupEventListeners();
+                this.lastFrameTime = 0;
+                this.requestId = null;
+            }
+
+            setupEventListeners() {
+                document.getElementById('connectBtn').addEventListener('click', () => this.connect());
+                document.getElementById('disconnectBtn').addEventListener('click', () => this.disconnect());
+                document.getElementById('autoPilotBtn').addEventListener('click', () => this.toggleAutoPilot());
+
+                // 键盘输入监听
+                document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+            }
+
+            // 添加游戏循环
+            setupGameLoop() {
+                const gameLoop = (timestamp) => {
+                    // 更新所有玩家的显示位置
+                    this.players.forEach(player => {
+                        player.updateDisplayPosition();
+                    });
+
+                    this.requestId = requestAnimationFrame(gameLoop);
+                };
+
+                this.requestId = requestAnimationFrame(gameLoop);
+            }
+
+            // 切换托管状态
+            toggleAutoPilot() {
+                this.isAutoPilot = !this.isAutoPilot;
+                const btn = document.getElementById('autoPilotBtn');
+                btn.textContent = this.isAutoPilot ? '关闭托管' : '开启托管';
+                btn.classList.toggle('btn-success', !this.isAutoPilot);
+                btn.classList.toggle('btn-danger', this.isAutoPilot);
+
+                if (this.isAutoPilot) {
+                    this.startAutoPilot();
+                } else {
+                    this.stopAutoPilot();
+                }
+            }
+
+            // 开始自动移动
+            startAutoPilot() {
+                // 立即选择第一个方向
+                this.changeDirection();
+
+                // 每2秒改变一次方向
+                this.directionInterval = setInterval(() => {
+                    this.changeDirection();
+                }, 2000);
+
+                // 每16毫秒发送一次输入指令（约60FPS）
+                this.inputInterval = setInterval(() => {
+                    if (!this.currentDirection) return;
+                    
+                    const input = {
+                        up: false,
+                        down: false,
+                        left: false,
+                        right: false
+                    };
+                    
+                    input[this.currentDirection] = true;
+                    this.sendMessage(MessageType.PLAYER_INPUT, input);
+                }, 16);
+            }
+
+            // 改变移动方向
+            changeDirection() {
+                const directions = ['up', 'down', 'left', 'right'];
+                this.currentDirection = directions[Math.floor(Math.random() * directions.length)];
+            }
+
+            // 停止自动移动
+            stopAutoPilot() {
+                if (this.directionInterval) {
+                    clearInterval(this.directionInterval);
+                    this.directionInterval = null;
+                }
+                
+                if (this.inputInterval) {
+                    clearInterval(this.inputInterval);
+                    this.inputInterval = null;
+                }
+                
+                // 发送停止指令
+                if (this.isConnected) {
+                    this.sendMessage(MessageType.PLAYER_INPUT, {
+                        up: false,
+                        down: false,
+                        left: false,
+                        right: false
+                    });
+                }
+                
+                this.currentDirection = null;
+            }
+
+            connect() {
+                if (this.isConnected) return;
+
+                this.ws = new WebSocket('ws://localhost:8002');
+                this.ws.binaryType = 'arraybuffer';
+
+                this.ws.onopen = () => {
+                    this.isConnected = true;
+                    document.getElementById('status').textContent = '已连接';
+                    document.getElementById('status').style.color = 'var(--primary)';
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('disconnectBtn').disabled = false;
+                    document.getElementById('autoPilotBtn').disabled = false;
+                    console.log('WebSocket连接已建立');
+                    this.setupGameLoop();
+                };
+
+                this.ws.onmessage = (event) => {
+                    this.handleMessage(event.data);
+                };
+
+                this.ws.onclose = () => {
+                    this.isConnected = false;
+                    this.stopAutoPilot();
+                    document.getElementById('status').textContent = '连接已断开';
+                    document.getElementById('status').style.color = 'var(--danger)';
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                    document.getElementById('autoPilotBtn').disabled = true;
+                    console.log('WebSocket连接已关闭');
+                    this.cleanup();
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket错误:', error);
+                };
+            }
+
+            disconnect() {
+                if (this.ws) {
+                    this.ws.close();
+                }
+            }
+
+            cleanup() {
+                // 停止游戏循环
+                if (this.requestId) {
+                    cancelAnimationFrame(this.requestId);
+                    this.requestId = null;
+                }
+                
+                // 停止所有托管相关定时器
+                this.stopAutoPilot();
+                
+                // 清除所有玩家
+                this.players.forEach(player => player.remove());
+                this.players.clear();
+                
+                // 重置方向状态
+                this.currentDirection = null;
+                this.isAutoPilot = false;
+                
+                // 更新按钮状态
+                const autoPilotBtn = document.getElementById('autoPilotBtn');
+                autoPilotBtn.textContent = '开启托管';
+                autoPilotBtn.classList.remove('btn-danger');
+                autoPilotBtn.classList.add('btn-success');
+                autoPilotBtn.disabled = true;
+            }
+
+            handleMessage(data) {
+                // 解析消息头
+                const dataView = new DataView(data);
+                const jsonLength = dataView.getUint16(0);
+                const messageType = dataView.getUint32(2);
+
+                // 解析JSON数据
+                const jsonStr = new TextDecoder().decode(data.slice(6, 6 + jsonLength));
+                const message = JSON.parse(jsonStr);
+
+                switch (messageType) {
+                    case MessageType.PLAYER_JOIN:
+                        this.handlePlayerJoin(message);
+                        break;
+                    case MessageType.PLAYER_LEAVE:
+                        this.handlePlayerLeave(message);
+                        break;
+                    case MessageType.FRAME_SYNC:
+                        this.handleFrameSync(message);
+                        break;
+                    default:
+                        console.warn('未知消息类型:', messageType);
+                }
+            }
+
+            sendMessage(type, data) {
+                if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+                const jsonStr = JSON.stringify(data);
+                const jsonLength = jsonStr.length;
+
+                // 创建消息缓冲区 (6字节头部 + JSON数据)
+                const buffer = new ArrayBuffer(6 + jsonLength);
+                const dataView = new DataView(buffer);
+
+                // 写入消息头
+                dataView.setUint16(0, jsonLength);  // 2字节JSON长度
+                dataView.setUint32(2, type);       // 4字节消息类型
+
+                // 写入JSON数据
+                const encoder = new TextEncoder();
+                const jsonData = encoder.encode(jsonStr);
+                const uint8Array = new Uint8Array(buffer);
+                uint8Array.set(jsonData, 6);
+
+                this.ws.send(buffer);
+            }
+
+            handlePlayerJoin(message) {
+                const { playerId, color, x, y } = message;
+
+                // 创建或更新玩家
+                if (!this.players.has(playerId)) {
+                    const player = new Player(playerId, color, x, y);
+                    this.players.set(playerId, player);
+                }
+
+                this.updatePlayersList();
+            }
+
+            handlePlayerLeave(message) {
+                const { playerId } = message;
+                if (this.players.has(playerId)) {
+                    const player = this.players.get(playerId);
+                    player.remove();
+                    this.players.delete(playerId);
+                }
+
+                this.updatePlayersList();
+            }
+
+            handleFrameSync(frameData) {
+                const playerInput = frameData;
+                let player = this.players.get(playerInput.playerId);
+
+                if (!player) return;
+
+                // 应用所有指令到玩家位置
+                const speed = 3; // 移动速度
+                let x = player.serverX;
+                let y = player.serverY;
+                playerInput.commands.forEach(cmd => {
+                    if (cmd.up) y -= speed;
+                    if (cmd.down) y += speed;
+                    if (cmd.left) x -= speed;
+                    if (cmd.right) x += speed;
+
+                    // 边界检查
+                    x = Math.max(0, Math.min(800 - 30, x));
+                    y = Math.max(0, Math.min(600 - 30, y));
+                });
+                
+                // 直接更新服务端位置
+                player.updateServerPosition(x, y);
+                this.updatePlayersList();
+            }
+
+            handleKeyDown(e) {
+                if (!this.isConnected || this.isAutoPilot) return;
+
+                const input = {
+                    up: e.key === 'w' || e.key === 'W',
+                    down: e.key === 's' || e.key === 'S',
+                    left: e.key === 'a' || e.key === 'A',
+                    right: e.key === 'd' || e.key === 'D'
+                };
+
+                this.sendMessage(MessageType.PLAYER_INPUT, input);
+            }
+
+            handleKeyUp(e) {
+                if (!this.isConnected || this.isAutoPilot) return;
+
+                const input = {
+                    up: false,
+                    down: false,
+                    left: false,
+                    right: false
+                };
+
+                switch (e.key.toLowerCase()) {
+                    case 'w': input.up = false; break;
+                    case 's': input.down = false; break;
+                    case 'a': input.left = false; break;
+                    case 'd': input.right = false; break;
+                    default: return;
+                }
+
+                this.sendMessage(MessageType.PLAYER_INPUT, input);
+            }
+
+            updatePlayersList() {
+                const playersList = document.getElementById('players');
+                playersList.innerHTML = '';
+
+                this.players.forEach(player => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>玩家 ${player.id}</span>
+                        <span>位置: (${Math.round(player.serverX)}, ${Math.round(player.serverY)})</span>
+                    `;
+                    playersList.appendChild(li);
+                });
+            }
+        }
+
+        // 初始化游戏客户端
+        const gameClient = new GameClient();
+    </script>
+</body>
+</html>
