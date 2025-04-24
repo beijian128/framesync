@@ -5,6 +5,7 @@ import (
 	"fmt"
 	appframeslb "github.com/beijian128/framesync/frame/appframe/slb"
 	"github.com/beijian128/framesync/frame/framework/worker"
+	"github.com/beijian128/framesync/proto/smsg"
 	"os"
 	"os/signal"
 	"reflect"
@@ -93,7 +94,7 @@ func (a *Application) init(netconfig *netcluster.ClusterConf, name string) error
 	a.respMsgMap = make(map[reflect.Type]bool)
 	a.userIDHandlerMap = make(map[reflect.Type]any)
 
-	a.RegisterResponse((*protoreq.ErrCode)(nil))
+	a.RegisterResponse((*smsg.ErrCode)(nil))
 
 	if !DisableApplicationInitGlobalLogrus {
 		close, err := log.InitLogrus(&cfg.Log)

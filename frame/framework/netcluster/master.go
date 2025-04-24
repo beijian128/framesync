@@ -180,8 +180,8 @@ func (m *Master) SendMsg(ID uint32, msg interface{}, extend *netframe.Server_Ext
 }
 
 // SendBytes ...
-func (m *Master) SendBytes(ID uint32, msgid uint32, bytes []byte, extend *netframe.Server_Extend) error {
-	return m.net.SendBytes(ID, msgid, bytes, extend)
+func (m *Master) SendBytes(ID uint32, msgId uint32, bytes []byte, extend *netframe.Server_Extend) error {
+	return m.net.SendBytes(ID, msgId, bytes, extend)
 }
 
 // Close ...
@@ -416,21 +416,21 @@ func (m *Master) onSlaveUptConfigMd5(ID uint32, serverType uint32, _ uint32, _ [
 }
 
 // OnBytes Master 收到A服务的消息后转发给B服务 （出于运行效率考虑，不做关注判断，即B是否为A的关注对象）
-func (m *Master) OnBytes(ID uint32, serverType uint32, msgid uint32, bytes []byte, extend netframe.Server_Extend) {
+func (m *Master) OnBytes(ID uint32, serverType uint32, msgId uint32, bytes []byte, extend netframe.Server_Extend) {
 	fromServerID := ID
 	toServerID := extend.ServerId
 
 	extend.ServerId = fromServerID
 
-	//logger.Tracef("------master router bytes to:%d, from:%d, userid:%d, msgid:%d", toServerID, fromServerID, extend.UserId, msgid)
-	err := m.SendBytes(toServerID, msgid, bytes, &extend)
+	//logger.Tracef("------master router bytes to:%d, from:%d, userid:%d, msgId:%d", toServerID, fromServerID, extend.UserId, msgId)
+	err := m.SendBytes(toServerID, msgId, bytes, &extend)
 	if err != nil {
 		logger.WithFields(logrus.Fields{
-			"msgid":     msgid,
+			"msgId":     msgId,
 			"fromSvrid": fromServerID,
 			"toSvrid":   toServerID,
 			"error":     err,
-		}).Warning("master router bytes error", msgid, fromServerID, toServerID, err)
+		}).Warning("master router bytes error", msgId, fromServerID, toServerID, err)
 		return
 	}
 

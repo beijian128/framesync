@@ -18,7 +18,6 @@ message Server_Extend {
     RouterMeta routerMeta = 6;
 
     string account = 7;
-    bytes clientData = 8; // c/s  客户端生成的协议序列号，原样返回
 }
 
 // heart 

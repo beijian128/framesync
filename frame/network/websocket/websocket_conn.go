@@ -21,7 +21,7 @@ var (
 )
 
 type msg interface {
-	marshal() (ext any, msgid uint32, data []byte, err error)
+	marshal() (ext any, msgId uint32, data []byte, err error)
 }
 
 type bytesMsg struct {
@@ -40,8 +40,8 @@ type protoMsg struct {
 }
 
 func (m *protoMsg) marshal() (any, uint32, []byte, error) {
-	msgid, data, err := msgprocessor.OnMarshal(m.msg)
-	return m.ext, msgid, data, err
+	msgId, data, err := msgprocessor.OnMarshal(m.msg)
+	return m.ext, msgId, data, err
 }
 
 type connection struct {
@@ -88,10 +88,10 @@ func (c *connection) WriteMsg(ext any, msg any) error {
 	})
 }
 
-func (c *connection) WriteBytes(ext any, msgid uint32, data []byte) error {
+func (c *connection) WriteBytes(ext any, msgId uint32, data []byte) error {
 	return c.write(&bytesMsg{
 		ext:  ext,
-		id:   msgid,
+		id:   msgId,
 		data: data,
 	})
 }
@@ -140,7 +140,7 @@ func (c *connection) writeLoop() {
 	}()
 
 	for msg := range c.writeCh {
-		ext, msgid, msgData, err := msg.marshal()
+		ext, msgId, msgData, err := msg.marshal()
 		if err != nil {
 			logger.WithError(err).Error("Marshal message error")
 			continue
@@ -150,21 +150,21 @@ func (c *connection) writeLoop() {
 		if ext != nil {
 			extData, err = c.msgProcessor.OnEncodeExt(ext)
 			if err != nil {
-				logger.WithField("msgid", msgid).WithError(err).Error("Encode ext error")
+				logger.WithField("msgId", msgId).WithError(err).Error("Encode ext error")
 				continue
 			}
 		}
 
 		w, err := c.c.NextWriter(websocket.BinaryMessage)
 		if err != nil {
-			logger.WithField("msgid", msgid).WithError(err).Error("Conn write message(NextWriter)")
+			logger.WithField("msgId", msgId).WithError(err).Error("Conn write message(NextWriter)")
 			break
 		}
 
-		err = c.msgPackager.WriteMsg(w, msgid, extData, msgData)
+		err = c.msgPackager.WriteMsg(w, msgId, extData, msgData)
 		if err != nil {
 			w.Close()
-			logger.WithField("msgid", msgid).WithError(err).Error("Conn write message")
+			logger.WithField("msgId", msgId).WithError(err).Error("Conn write message")
 			break
 		}
 
@@ -204,7 +204,7 @@ func (c *connection) readLoop() {
 			break
 		}
 
-		msgid, extData, msgData, err := c.msgPackager.ReadMsg(r)
+		msgId, extData, msgData, err := c.msgPackager.ReadMsg(r)
 		if c.isClosed() {
 			break
 		}
@@ -217,13 +217,13 @@ func (c *connection) readLoop() {
 
 		ext, err := c.msgProcessor.OnDecodeExt(extData)
 		if err != nil {
-			logger.WithField("msgid", msgid).WithError(err).Error("Decode ext error")
+			logger.WithField("msgId", msgId).WithError(err).Error("Decode ext error")
 			break
 		}
 
-		err = c.msgProcessor.OnMessage(c, ext, msgid, msgData)
+		err = c.msgProcessor.OnMessage(c, ext, msgId, msgData)
 		if err != nil {
-			logger.WithField("msgid", msgid).WithError(err).Error("OnMessage error (websocket)")
+			logger.WithField("msgId", msgId).WithError(err).Error("OnMessage error (websocket)")
 			break
 		}
 	}

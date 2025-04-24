@@ -2,9 +2,9 @@ package appframe
 
 import (
 	"github.com/beijian128/framesync/frame/framework/netframe"
+	"github.com/beijian128/framesync/proto/smsg"
 	"reflect"
 
-	"github.com/beijian128/framesync/frame/appframe/request/protoreq"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
@@ -40,14 +40,8 @@ func (r *requester) Resp(msg proto.Message) error {
 }
 
 // NewErrorResponse 创建一个通用的错误响应消息, 该消息会以 error 的形式返回给请求者的回调函数, 帮助简化错误处理
-func NewErrorResponse() *protoreq.ErrCode {
-	return new(protoreq.ErrCode)
-}
-
-// CheckErrorResponse 检查错误是否为 ErrorResponse
-func CheckErrorResponse(err error) (*protoreq.ErrCode, bool) {
-	ec, ok := err.(*protoreq.ErrCode)
-	return ec, ok
+func NewErrorResponse() *smsg.ErrCode {
+	return new(smsg.ErrCode)
 }
 
 // ListenRequestSugar 为消息监听处理提供便利.

@@ -67,7 +67,7 @@ func (s *server) ForwardMsgFromSession(msg proto.Message, extend netframe.Server
 	return s.app.slave.SendServerMsg(msg, extend)
 }
 
-func (s *server) ForwardRawMsgFromSession(msgid uint32, data []byte, extend netframe.Server_Extend) error {
+func (s *server) ForwardRawMsgFromSession(msgId uint32, data []byte, extend netframe.Server_Extend) error {
 	extend.ServerId = s.id
-	return s.app.slave.SendServerBytes(msgid, data, extend)
+	return s.app.slave.SendServerBytes(msgId, data, extend)
 }

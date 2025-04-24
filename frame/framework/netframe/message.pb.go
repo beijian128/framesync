@@ -31,7 +31,6 @@ type Server_Extend struct {
 	ExtParam      int64                     `protobuf:"varint,5,opt,name=ExtParam,proto3" json:"ExtParam,omitempty"` //扩展参数
 	RouterMeta    *Server_Extend_RouterMeta `protobuf:"bytes,6,opt,name=routerMeta,proto3" json:"routerMeta,omitempty"`
 	Account       string                    `protobuf:"bytes,7,opt,name=account,proto3" json:"account,omitempty"`
-	ClientData    []byte                    `protobuf:"bytes,8,opt,name=clientData,proto3" json:"clientData,omitempty"` // c/s  客户端生成的协议序列号，原样返回
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -113,13 +112,6 @@ func (x *Server_Extend) GetAccount() string {
 		return x.Account
 	}
 	return ""
-}
-
-func (x *Server_Extend) GetClientData() []byte {
-	if x != nil {
-		return x.ClientData
-	}
-	return nil
 }
 
 // heart
@@ -514,7 +506,7 @@ var File_netframe_message_proto protoreflect.FileDescriptor
 
 const file_netframe_message_proto_rawDesc = "" +
 	"\n" +
-	"\x16netframe/message.proto\x12\bnetframe\"\xb9\x02\n" +
+	"\x16netframe/message.proto\x12\bnetframe\"\x99\x02\n" +
 	"\rServer_Extend\x12\x1a\n" +
 	"\bServerId\x18\x01 \x01(\rR\bServerId\x12\x1c\n" +
 	"\tSessionId\x18\x02 \x01(\x04R\tSessionId\x12\x14\n" +
@@ -524,10 +516,7 @@ const file_netframe_message_proto_rawDesc = "" +
 	"\n" +
 	"routerMeta\x18\x06 \x01(\v2\".netframe.Server_Extend.RouterMetaR\n" +
 	"routerMeta\x12\x18\n" +
-	"\aaccount\x18\a \x01(\tR\aaccount\x12\x1e\n" +
-	"\n" +
-	"clientData\x18\b \x01(\fR\n" +
-	"clientData\x1a&\n" +
+	"\aaccount\x18\a \x01(\tR\aaccount\x1a&\n" +
 	"\n" +
 	"RouterMeta\x12\x18\n" +
 	"\areqFrom\x18\x01 \x01(\rR\areqFrom\"3\n" +

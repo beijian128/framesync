@@ -3,6 +3,7 @@ package protoreq
 import (
 	"errors"
 	"github.com/beijian128/framesync/frame/framework/netframe"
+	"github.com/beijian128/framesync/proto/smsg"
 	"time"
 
 	"github.com/beijian128/framesync/frame/appframe/request"
@@ -58,8 +59,8 @@ func (c *Client) Call(sendMsg func(proto.Message, netframe.Server_Extend) error,
 
 // OnResp 响应消息, 消息必须有 Seqid int64 字段
 func (c *Client) OnResp(msg proto.Message, seqID int64) {
-	if err, ok := msg.(*ErrCode); ok {
-		c.Client.OnErr(seqID, err)
+	if err, ok := msg.(*smsg.ErrCode); ok {
+		c.Client.OnErr(seqID, errors.New(err.String()))
 	} else {
 		c.Client.OnResp(seqID, msg)
 	}

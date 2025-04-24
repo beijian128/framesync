@@ -83,35 +83,35 @@ func (p *MetaProcessor) OnClose(conn connection.Connection) {
 }
 
 // OnMessage 消息回调
-func (p *MetaProcessor) OnMessage(conn connection.Connection, ext any, msgid uint32, msgData []byte) error {
-	handler, ok := p.findMsgHandler(msgid)
+func (p *MetaProcessor) OnMessage(conn connection.Connection, ext any, msgId uint32, msgData []byte) error {
+	handler, ok := p.findMsgHandler(msgId)
 	if !ok {
 		if p.BytesHandler != nil {
 			p.callbackIO.Post(func() {
-				p.BytesHandler(conn, ext, msgid, msgData)
+				p.BytesHandler(conn, ext, msgId, msgData)
 			})
 		}
 		return nil
 	}
 
-	msg, err := OnUnmarshal(msgid, msgData)
+	msg, err := OnUnmarshal(msgId, msgData)
 	if err != nil {
 		return err
 	}
 
 	p.callbackIO.Post(func() {
-		handler(conn, ext, msgid, msgData, msg)
+		handler(conn, ext, msgId, msgData, msg)
 	})
 
 	return nil
 }
 
-func (p *MetaProcessor) findMsgHandler(msgid uint32) (MsgHandler, bool) {
+func (p *MetaProcessor) findMsgHandler(msgId uint32) (MsgHandler, bool) {
 	if p.MsgHandlers == nil {
 		return nil, false
 	}
 
-	typ, ok := MessageType(msgid)
+	typ, ok := MessageType(msgId)
 	if !ok {
 		return nil, false
 	}

@@ -11,7 +11,7 @@ import (
 
 // msg struct
 // ----------------------------------------
-// | seqid | extlen | msglen | msgid | ext | msg |
+// | seqid | extlen | msglen | msgId | ext | msg |
 // ----------------------------------------
 // | seqid |  head                   |    body   |
 // ----------------------------------------
@@ -29,7 +29,7 @@ type metaPackager struct {
 
 	// byte流
 	EncodeHead func([]byte, uint32, uint32, uint32)
-	// byte流 -> headlen, datalen, msgid
+	// byte流 -> headlen, datalen, msgId
 	DecodeHeadLen   func([]byte) (uint32, uint32)
 	DecodeHeadMsgID func([]byte) uint32
 }
@@ -138,15 +138,6 @@ func NewMetaPackager(extLenSize int, msgLenSize int, byteOrder binary.ByteOrder,
 // ReadMsg ...
 func (p *metaPackager) ReadMsg(reader io.Reader) (msgId uint32, extData []byte, msgData []byte, err error) {
 
-	if p.isGate {
-		extData = make([]byte, 12)
-		if n, err := io.ReadFull(reader, extData); err != nil {
-			if !(err == io.EOF && n == 12) {
-				return 0, nil, nil, err
-			}
-		}
-	}
-
 	// 解析 extlen和msglen
 	lengthData := make([]byte, p.headLen-MessageIDSize)
 	if n, err := io.ReadFull(reader, lengthData); err != nil {
@@ -170,16 +161,16 @@ func (p *metaPackager) ReadMsg(reader io.Reader) (msgId uint32, extData []byte, 
 		}
 	}
 
-	msgid := p.DecodeHeadMsgID(msgBodyWithMsgID)
+	msgId = p.DecodeHeadMsgID(msgBodyWithMsgID)
 
 	body := msgBodyWithMsgID[MessageIDSize:]
 
 	// ext
 	if p.extMaxLen != 0 && extLen > 0 {
-		return msgid, body[:extLen], body[extLen:], nil
+		return msgId, body[:extLen], body[extLen:], nil
 	}
 
-	return msgid, extData, body, nil
+	return msgId, extData, body, nil
 }
 
 // WriteMsg ...
@@ -188,7 +179,7 @@ func (p *metaPackager) WriteMsg(writer io.Writer, id uint32, extdata []byte, msg
 	msgLen := uint32(len(msgdata))
 
 	if msgLen > p.msgMaxLen {
-		return fmt.Errorf("write msgdata too max msgid: %d, len: %d", id, msgLen)
+		return fmt.Errorf("write msgdata too max msgId: %d, len: %d", id, msgLen)
 	}
 
 	var extLen uint32
@@ -212,12 +203,6 @@ func (p *metaPackager) WriteMsg(writer io.Writer, id uint32, extdata []byte, msg
 	// write msg
 	copy(buffer[pos:], msgdata)
 
-	if p.isGate { // 12 字节的消息唯一号 原样放回
-		if len(extdata) != 12 {
-			extdata = make([]byte, 12)
-		}
-		buffer = append(extdata, buffer...)
-	}
 	// write to io
 
 	if _, err := writer.Write(buffer); err != nil {

@@ -33,7 +33,7 @@ var (
 
 type writemsg struct {
 	ext   any
-	msgid uint32
+	msgId uint32
 	msg   any
 }
 
@@ -141,7 +141,7 @@ func (tcpConn *Conn) postWriteMsg(msg *writemsg) bool {
 	}
 }
 
-func (tcpConn *Conn) doWrite(ext any, msgid uint32, msg any) error {
+func (tcpConn *Conn) doWrite(ext any, msgId uint32, msg any) error {
 	// 需要控制的话，使用select+timeout 方式
 	if tcpConn.isCloseWhenBuffFull && len(tcpConn.writeChan) == cap(tcpConn.writeChan) {
 		tcpConn.logError(ErrWriteChanFull, "Conn doWrite error")
@@ -155,7 +155,7 @@ func (tcpConn *Conn) doWrite(ext any, msgid uint32, msg any) error {
 		return ErrWriteChanFull
 	}
 
-	sendmsg := &writemsg{ext, msgid, msg}
+	sendmsg := &writemsg{ext, msgId, msg}
 	//tcpConn.writeChan <- sendmsg
 	ok := tcpConn.postWriteMsg(sendmsg)
 	if !ok {
@@ -181,11 +181,11 @@ func (tcpConn *Conn) WriteMsg(ext any, msg any) error {
 }
 
 // WriteBytes ...
-func (tcpConn *Conn) WriteBytes(ext any, msgid uint32, bytes []byte) error {
+func (tcpConn *Conn) WriteBytes(ext any, msgId uint32, bytes []byte) error {
 	if tcpConn.isClosed() {
 		return ErrClosed
 	}
-	return tcpConn.doWrite(ext, msgid, bytes)
+	return tcpConn.doWrite(ext, msgId, bytes)
 }
 
 // LocalAddr ...
@@ -211,43 +211,43 @@ func (tcpConn *Conn) WriteLoop() {
 			break
 		}
 
-		var msgid uint32
+		var msgId uint32
 		var data []byte
 
-		if msg.msgid == 0 {
+		if msg.msgId == 0 {
 			var err1 error
 			// 组织消息
-			msgid, data, err1 = msgprocessor.OnMarshal(msg.msg)
+			msgId, data, err1 = msgprocessor.OnMarshal(msg.msg)
 			if err1 != nil {
 				if tcpConn.isServer {
-					tcpConn.log(err1, "Marshal message error, msgid: ", msgid)
+					tcpConn.log(err1, "Marshal message error, msgId: ", msgId)
 				} else {
-					tcpConn.logError(err1, "Marshal message error, msgid: ", msgid)
+					tcpConn.logError(err1, "Marshal message error, msgId: ", msgId)
 				}
 				continue
 			}
 		} else {
 			// byteSliceTypeName = reflect.TypeOf([]byte(nil))
 			// 一定得是[]byte类型
-			msgid = msg.msgid
+			msgId = msg.msgId
 			data = msg.msg.([]byte)
 		}
 
 		// 加密消息
 		extData, err2 := tcpConn.msgProcessor.OnEncodeExt(msg.ext)
 		if err2 != nil {
-			tcpConn.logError(err2, "Encode message error, msgid: ", msgid)
+			tcpConn.logError(err2, "Encode message error, msgId: ", msgId)
 			break
 		}
 
 		// 打包消息
-		err3 := tcpConn.msgPackager.WriteMsg(tcpConn.conn, msgid, extData, data)
+		err3 := tcpConn.msgPackager.WriteMsg(tcpConn.conn, msgId, extData, data)
 		if err3 != nil {
 			if err3 != io.EOF {
 				if tcpConn.isServer {
-					tcpConn.log(err3, "Conn write message, msgid: ", msgid)
+					tcpConn.log(err3, "Conn write message, msgId: ", msgId)
 				} else {
-					tcpConn.logError(err3, "Conn write message, msgid: ", msgid)
+					tcpConn.logError(err3, "Conn write message, msgId: ", msgId)
 				}
 			}
 			continue
@@ -268,7 +268,7 @@ func (tcpConn *Conn) ReadLoop() {
 	tcpConn.msgProcessor.OnConnect(tcpConn)
 
 	for {
-		msgid, extData, msgData, err1 := tcpConn.msgPackager.ReadMsg(tcpConn.conn)
+		msgId, extData, msgData, err1 := tcpConn.msgPackager.ReadMsg(tcpConn.conn)
 		if err1 != nil {
 			if err1 != io.EOF {
 				if tcpConn.isServer {
@@ -288,16 +288,16 @@ func (tcpConn *Conn) ReadLoop() {
 		if err2 != nil {
 			logger.WithFields(logrus.Fields{
 				"conn":  fmt.Sprintf("%s(%s)", tcpConn.Name(), tcpConn.RemoteAddr().String()),
-				"msgid": msgid,
+				"msgId": msgId,
 			}).WithError(err2).Error("Decode ext error")
 			break
 		}
 
-		err3 := tcpConn.msgProcessor.OnMessage(tcpConn, ext, msgid, msgData)
+		err3 := tcpConn.msgProcessor.OnMessage(tcpConn, ext, msgId, msgData)
 		if err3 != nil {
 			logger.WithFields(logrus.Fields{
 				"conn":  tcpConn.Name(),
-				"msgid": msgid,
+				"msgId": msgId,
 			}).WithError(err3).Error("OnMessage error")
 
 			//消息处理出错。这里不断开连接

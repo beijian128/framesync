@@ -127,10 +127,6 @@ func (net *implMetaNet) ListenMessage(msg any, fmessage OnNetMessage) {
 		if ext != nil {
 			if svrExt, ok := ext.(*Server_Extend); ok {
 				extend = *(svrExt)
-			} else {
-				if extData, ok := ext.([]byte); ok {
-					extend = Server_Extend{ClientData: extData}
-				}
 			}
 		}
 
@@ -245,8 +241,8 @@ func (net *implMetaNet) SendGateMsg(ID uint32, msg any) error {
 	return net.SendMsg(ID, msg, nil)
 }
 
-func (net *implMetaNet) SendGateBytes(ID uint32, msgid uint32, bytes []byte) error {
-	return net.SendBytes(ID, msgid, bytes, nil)
+func (net *implMetaNet) SendGateBytes(ID uint32, msgId uint32, bytes []byte) error {
+	return net.SendBytes(ID, msgId, bytes, nil)
 }
 
 func (net *implMetaNet) SendMsg(ID uint32, msg any, extend *Server_Extend) error {
@@ -265,16 +261,16 @@ func (net *implMetaNet) SendMsg(ID uint32, msg any, extend *Server_Extend) error
 	return fmt.Errorf("MetaNet SendMsg, no serverid:%d, err id or has disconnected", ID)
 }
 
-func (net *implMetaNet) SendBytes(ID uint32, msgid uint32, bytes []byte, extend *Server_Extend) error {
+func (net *implMetaNet) SendBytes(ID uint32, msgId uint32, bytes []byte, extend *Server_Extend) error {
 	net.NetMutex.Lock()
 	defer net.NetMutex.Unlock()
 
 	if connItem, ok := net.ID2ConnItem[ID]; ok {
 		if conn, ok := connItem.getConn(); ok {
 			if IsServerID(ID) {
-				return conn.WriteBytes(extend, msgid, bytes)
+				return conn.WriteBytes(extend, msgId, bytes)
 			}
-			return conn.WriteBytes(extend.ClientData, msgid, bytes)
+			return conn.WriteBytes(nil, msgId, bytes)
 		}
 	}
 
@@ -383,7 +379,7 @@ func (net *implMetaNet) onClose(conn connection.Connection) {
 	}
 }
 
-func (net *implMetaNet) onBytes(conn connection.Connection, ext any, msgid uint32, bytes []byte) {
+func (net *implMetaNet) onBytes(conn connection.Connection, ext any, msgId uint32, bytes []byte) {
 	if net.BytesHandler == nil {
 		return
 	}
@@ -392,8 +388,8 @@ func (net *implMetaNet) onBytes(conn connection.Connection, ext any, msgid uint3
 	if !ok {
 		logger.WithFields(logrus.Fields{
 			"conn":  conn,
-			"msgid": msgid,
-		}).Warning("MetaNet onBytes no connitem", conn, msgid)
+			"msgId": msgId,
+		}).Warning("MetaNet onBytes no connitem", conn, msgId)
 		return
 	}
 
@@ -402,22 +398,22 @@ func (net *implMetaNet) onBytes(conn connection.Connection, ext any, msgid uint3
 		switch ext.(type) {
 		case *Server_Extend:
 			exts := ext.(*Server_Extend)
-			net.BytesHandler(connItem.ID, connItem.ServerType, msgid, bytes, *exts)
+			net.BytesHandler(connItem.ID, connItem.ServerType, msgId, bytes, *exts)
 		case []byte:
-			net.BytesHandler(connItem.ID, connItem.ServerType, msgid, bytes, Server_Extend{ClientData: ext.([]byte)})
+			net.BytesHandler(connItem.ID, connItem.ServerType, msgId, bytes, Server_Extend{})
 			logger.WithFields(logrus.Fields{
 				"conn":  conn,
-				"msgid": msgid,
-			}).Warning("MetaNet onBytes  ext type is []byte", conn, msgid)
+				"msgId": msgId,
+			}).Warning("MetaNet onBytes  ext type is []byte", conn, msgId)
 		default:
 			logger.WithFields(logrus.Fields{
 				"conn":  conn,
-				"msgid": msgid,
-			}).Warning("MetaNet onBytes unknown ext type", conn, msgid)
+				"msgId": msgId,
+			}).Warning("MetaNet onBytes unknown ext type", conn, msgId)
 		}
 
 	} else {
-		net.BytesHandler(connItem.ID, connItem.ServerType, msgid, bytes, Server_Extend{})
+		net.BytesHandler(connItem.ID, connItem.ServerType, msgId, bytes, Server_Extend{})
 	}
 }
 

@@ -41,26 +41,26 @@ func (a *GateApplication) init(netconfig *netcluster.ClusterConf, name string) e
 	}
 	a.router = make(map[uint32]GateSessionRawMsgRouter)
 	// 将来自用户会话的消息转发到目标服务器.
-	a.slave.ListenClientBytes(func(sid uint32, _ uint32, msgid uint32, data []byte, extend netframe.Server_Extend) {
+	a.slave.ListenClientBytes(func(sid uint32, _ uint32, msgId uint32, data []byte, extend netframe.Server_Extend) {
 		if a.IsExit() {
 			return
 		}
-		router, ok := a.router[msgid]
+		router, ok := a.router[msgId]
 		if ok {
-			router(toSession64(sid), msgid, data, extend.ExtParam)
+			router(toSession64(sid), msgId, data, extend.ExtParam)
 		} else {
 			logrus.WithFields(logrus.Fields{
 				"session": sid,
-				"msgid":   msgid,
+				"msgId":   msgId,
 			}).Warn("Unregister msg for route")
 		}
 	})
 	// 将来自服务的消息转发给指定用户会话.
-	a.slave.ListenServerBytes(func(_ uint32, _ uint32, msgid uint32, data []byte, extend netframe.Server_Extend) {
+	a.slave.ListenServerBytes(func(_ uint32, _ uint32, msgId uint32, data []byte, extend netframe.Server_Extend) {
 		if a.IsExit() {
 			return
 		}
-		a.slave.SendClientBytes(toSession32(extend.SessionId), msgid, data, extend)
+		a.slave.SendClientBytes(toSession32(extend.SessionId), msgId, data, extend)
 	})
 	return nil
 }
@@ -111,8 +111,8 @@ func (a *GateApplication) ListenSessionMsg(msg proto.Message, handler GateSessio
 
 // RouteSessionRawMsg 设置消息路由函数, 未 ListenSessionMsg 的消息会调用该函数.
 func (a *GateApplication) RouteSessionRawMsg(msg proto.Message, router GateSessionRawMsgRouter) {
-	msgid := util.StringHash(string(proto.MessageName(msg)))
-	a.router[msgid] = router
+	msgId := util.StringHash(string(proto.MessageName(msg)))
+	a.router[msgId] = router
 }
 
 // GetSession 获取用户会话对象

@@ -32,7 +32,7 @@ type Service interface {
 	RequestCall(msg proto.Message, timeout time.Duration) (proto.Message, error)
 
 	// ForwardRawMsgFromSession 转发来自用户会话的原始消息给该服务
-	ForwardRawMsgFromSession(msgid uint32, data []byte, extend netframe.Server_Extend) error
+	ForwardRawMsgFromSession(msgId uint32, data []byte, extend netframe.Server_Extend) error
 }
 
 var (
@@ -74,7 +74,7 @@ func (u *unregisteredService) RequestCall(msg proto.Message, timeout time.Durati
 	return nil, ErrUnregisteredService
 }
 
-func (u *unregisteredService) ForwardRawMsgFromSession(msgid uint32, data []byte, extend netframe.Server_Extend) error {
+func (u *unregisteredService) ForwardRawMsgFromSession(msgId uint32, data []byte, extend netframe.Server_Extend) error {
 	return ErrUnregisteredService
 }
 

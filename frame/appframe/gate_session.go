@@ -20,7 +20,7 @@ type GateSession interface {
 	SendMsg(msg proto.Message) error
 
 	// ForwardRawMsg 转发其他服务过来的消息给会话
-	ForwardRawMsg(msgid uint32, data []byte) error
+	ForwardRawMsg(msgId uint32, data []byte) error
 
 	// Close 关闭会话连接
 	Close()
@@ -33,7 +33,7 @@ type GateSession interface {
 type GateSessionMsgHandler func(session GateSession, msg proto.Message)
 
 // GateSessionRawMsgRouter 转发来自Session的消息的委托函数.
-type GateSessionRawMsgRouter func(sid uint64, msgid uint32, data []byte, extParam int64)
+type GateSessionRawMsgRouter func(sid uint64, msgId uint32, data []byte, extParam int64)
 
 type gateSession struct {
 	id     uint64
@@ -54,18 +54,11 @@ func (s *gateSession) Addr() net.Addr {
 }
 
 func (s *gateSession) SendMsg(msg proto.Message) error {
-	if s.extend.ClientData == nil {
-		s.extend.ClientData = make([]byte, 12)
-	}
-	//logrus.Debug("send msg to client:", msg, "ext ", s.extend)
 	return s.app.slave.SendClientMsg(toSession32(s.id), msg, s.extend)
 }
 
-func (s *gateSession) ForwardRawMsg(msgid uint32, data []byte) error {
-	if s.extend.ClientData == nil {
-		s.extend.ClientData = make([]byte, 12)
-	}
-	return s.app.slave.SendClientBytes(toSession32(s.id), msgid, data, s.extend)
+func (s *gateSession) ForwardRawMsg(msgId uint32, data []byte) error {
+	return s.app.slave.SendClientBytes(toSession32(s.id), msgId, data, s.extend)
 }
 
 func (s *gateSession) Close() {

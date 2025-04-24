@@ -266,62 +266,62 @@ func (s *Slave) RemoteAddr(ID uint32) net.Addr {
 // SendClientMsg ...
 func (s *Slave) SendClientMsg(ID uint32, msg interface{}, extend netframe.Server_Extend) error {
 
-	msgid, data, err1 := msgprocessor.OnMarshal(msg)
+	msgId, data, err1 := msgprocessor.OnMarshal(msg)
 	if err1 != nil {
 		return err1
 	}
 
-	return s.sendByteWithInterceptor(ID, msgid, data, &extend)
+	return s.sendByteWithInterceptor(ID, msgId, data, &extend)
 }
 
 // SendClientBytes ...
-func (s *Slave) SendClientBytes(ID uint32, msgid uint32, bytes []byte, extend netframe.Server_Extend) error {
-	return s.sendByteWithInterceptor(ID, msgid, bytes, &extend)
+func (s *Slave) SendClientBytes(ID uint32, msgId uint32, bytes []byte, extend netframe.Server_Extend) error {
+	return s.sendByteWithInterceptor(ID, msgId, bytes, &extend)
 }
 
 // SendServerMsg serverID:目标服务器
 func (s *Slave) SendServerMsg(msg interface{}, extend netframe.Server_Extend) error {
 
-	msgid, data, err1 := msgprocessor.OnMarshal(msg)
+	msgId, data, err1 := msgprocessor.OnMarshal(msg)
 	if err1 != nil {
 		logger.WithFields(logrus.Fields{
 			"serverID": extend.ServerId,
 			"error":    err1,
-			"msgid":    msgid,
+			"msgId":    msgId,
 			"msg":      fmt.Sprintf("%#v", msg),
 		}).Error("Marshal message error")
 		return fmt.Errorf("slave SendServerMsg, OnMarshal error! serverId:%d, error:%s", extend.ServerId, err1)
 	}
 
-	return s.SendServerBytes(msgid, data, extend)
+	return s.SendServerBytes(msgId, data, extend)
 }
 
 // SendServerBytes ...
-func (s *Slave) SendServerBytes(msgid uint32, bytes []byte, extend netframe.Server_Extend) error {
+func (s *Slave) SendServerBytes(msgId uint32, bytes []byte, extend netframe.Server_Extend) error {
 	s.svrMutex.Lock()
 	defer s.svrMutex.Unlock()
 	if ssinfo, ok := s.id2Subscribers[extend.ServerId]; ok {
 		if ssinfo.shiftingMaster || len(ssinfo.shiftMsgQueue) != 0 {
 			ssinfo.shiftMsgNewPri++
-			ssinfo.shiftMsgQueue.Push(&wMessage{bytes: bytes, pri: ssinfo.shiftMsgNewPri, extend: extend, msgID: msgid})
+			ssinfo.shiftMsgQueue.Push(&wMessage{bytes: bytes, pri: ssinfo.shiftMsgNewPri, extend: extend, msgID: msgId})
 			return nil
 		}
 
-		return s.sendByteWithInterceptor(ssinfo.fMasterID, msgid, bytes, &extend)
+		return s.sendByteWithInterceptor(ssinfo.fMasterID, msgId, bytes, &extend)
 	}
 
 	return fmt.Errorf("slave SendServerBytes, no serverinfo. id:%d", extend.ServerId)
 }
 
-func (s *Slave) sendByteWithInterceptor(ID uint32, msgid uint32, bytes []byte, extend *netframe.Server_Extend) error {
+func (s *Slave) sendByteWithInterceptor(ID uint32, msgId uint32, bytes []byte, extend *netframe.Server_Extend) error {
 	if s.interceptFunc != nil {
 		msgSrc := MsgSrcOut_Client
 		if netframe.IsServerID(ID) {
 			msgSrc = MsgSrcOut_Server
 		}
-		s.interceptFunc(msgSrc, ID, msgid, bytes, extend)
+		s.interceptFunc(msgSrc, ID, msgId, bytes, extend)
 	}
-	return s.net.SendBytes(ID, msgid, bytes, extend)
+	return s.net.SendBytes(ID, msgId, bytes, extend)
 }
 
 // Close ...
@@ -390,11 +390,11 @@ func (s *Slave) ListenClientNetEvent(con netframe.OnNetConnect, discon netframe.
 }
 
 func (s *Slave) ListenClientBytes(onBytes netframe.OnNetBytes) {
-	s.clientBytes = func(ID uint32, serverType uint32, msgid uint32, bytes []byte, extend netframe.Server_Extend) {
+	s.clientBytes = func(ID uint32, serverType uint32, msgId uint32, bytes []byte, extend netframe.Server_Extend) {
 		if s.interceptFunc != nil {
-			s.interceptFunc(MsgSrcIn_Client, ID, msgid, bytes, &extend)
+			s.interceptFunc(MsgSrcIn_Client, ID, msgId, bytes, &extend)
 		}
-		onBytes(ID, serverType, msgid, bytes, extend)
+		onBytes(ID, serverType, msgId, bytes, extend)
 	}
 }
 
@@ -439,11 +439,11 @@ func (s *Slave) ListenServerStatus(serverType uint32, handler SvrEventHandler) {
 
 func (s *Slave) ListenServerBytes(onBytes netframe.OnNetBytes) {
 	//s.masterBytes = onBytes
-	s.masterBytes = func(ID uint32, serverType uint32, msgid uint32, bytes []byte, extend netframe.Server_Extend) {
+	s.masterBytes = func(ID uint32, serverType uint32, msgId uint32, bytes []byte, extend netframe.Server_Extend) {
 		if s.interceptFunc != nil {
-			s.interceptFunc(MsgSrcIn_Server, ID, msgid, bytes, &extend)
+			s.interceptFunc(MsgSrcIn_Server, ID, msgId, bytes, &extend)
 		}
-		onBytes(ID, serverType, msgid, bytes, extend)
+		onBytes(ID, serverType, msgId, bytes, extend)
 	}
 }
 
@@ -532,14 +532,14 @@ func (s *Slave) OnClose(ID uint32, serverType uint32) {
 	}
 }
 
-func (s *Slave) OnBytes(ID uint32, serverType uint32, msgid uint32, bytes []byte, extend netframe.Server_Extend) {
+func (s *Slave) OnBytes(ID uint32, serverType uint32, msgId uint32, bytes []byte, extend netframe.Server_Extend) {
 	if serverType == s.masterType {
 		if s.masterBytes != nil {
-			s.masterBytes(ID, serverType, msgid, bytes, extend)
+			s.masterBytes(ID, serverType, msgId, bytes, extend)
 		}
 	} else if !netframe.IsServerID(ID) {
 		if s.clientBytes != nil {
-			s.clientBytes(ID, serverType, msgid, bytes, extend)
+			s.clientBytes(ID, serverType, msgId, bytes, extend)
 		}
 	}
 }

@@ -4,7 +4,6 @@ go 1.24.1
 
 require (
 	github.com/bshuster-repo/logrus-logstash-hook v1.1.0
-	github.com/golang/protobuf v1.5.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/lestrrat/go-file-rotatelogs v0.0.0-20180223000712-d3151e2a480f
 	github.com/natefinch/lumberjack v2.0.0+incompatible

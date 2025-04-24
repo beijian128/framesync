@@ -89,7 +89,7 @@ type OnNetConnect func(ID uint32, uint32 uint32)
 type OnNetClose func(ID uint32, uint32 uint32)
 type (
 	// OnNetBytes ...
-	OnNetBytes func(ID uint32, uint32 uint32, msgid uint32, bytes []byte, extend Server_Extend)
+	OnNetBytes func(ID uint32, uint32 uint32, msgId uint32, bytes []byte, extend Server_Extend)
 	// OnNetMessage ...
 	OnNetMessage func(ID uint32, uint32 uint32, msgId uint32, bytes []byte, msg any, extend Server_Extend)
 	// OnWorkerExit ...
@@ -120,9 +120,9 @@ type (
 		RemoteAddr(ID uint32) net.Addr
 
 		SendGateMsg(ID uint32, msg any) error
-		SendGateBytes(ID uint32, msgid uint32, bytes []byte) error
+		SendGateBytes(ID uint32, msgId uint32, bytes []byte) error
 		SendMsg(ID uint32, msg any, extend *Server_Extend) error
-		SendBytes(ID uint32, msgid uint32, bytes []byte, extend *Server_Extend) error
+		SendBytes(ID uint32, msgId uint32, bytes []byte, extend *Server_Extend) error
 
 		Close(ID uint32)
 	}

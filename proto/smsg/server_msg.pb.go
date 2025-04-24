@@ -74,6 +74,70 @@ func (x *NoticeSessionClosed) GetSession() uint64 {
 	return 0
 }
 
+// ErrCode 通用错误定义
+type ErrCode struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用于响应消息(框架使用的字段, 使用者不用手动设置).
+	Seqid int64 `protobuf:"varint,1,opt,name=seqid,proto3" json:"seqid,omitempty"`
+	// 错误码.
+	Code int32 `protobuf:"varint,2,opt,name=code,proto3" json:"code,omitempty"`
+	// 错误详细消息.
+	Msg           string `protobuf:"bytes,3,opt,name=msg,proto3" json:"msg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ErrCode) Reset() {
+	*x = ErrCode{}
+	mi := &file_smsg_server_msg_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ErrCode) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErrCode) ProtoMessage() {}
+
+func (x *ErrCode) ProtoReflect() protoreflect.Message {
+	mi := &file_smsg_server_msg_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErrCode.ProtoReflect.Descriptor instead.
+func (*ErrCode) Descriptor() ([]byte, []int) {
+	return file_smsg_server_msg_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ErrCode) GetSeqid() int64 {
+	if x != nil {
+		return x.Seqid
+	}
+	return 0
+}
+
+func (x *ErrCode) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *ErrCode) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
 var File_smsg_server_msg_proto protoreflect.FileDescriptor
 
 const file_smsg_server_msg_proto_rawDesc = "" +
@@ -81,7 +145,11 @@ const file_smsg_server_msg_proto_rawDesc = "" +
 	"\x15smsg/server_msg.proto\x12\x04smsg\"G\n" +
 	"\x13NoticeSessionClosed\x12\x16\n" +
 	"\x06userid\x18\x01 \x01(\x04R\x06userid\x12\x18\n" +
-	"\asession\x18\x02 \x01(\x04R\asessionB\aZ\x05/smsgb\x06proto3"
+	"\asession\x18\x02 \x01(\x04R\asession\"E\n" +
+	"\aErrCode\x12\x14\n" +
+	"\x05seqid\x18\x01 \x01(\x03R\x05seqid\x12\x12\n" +
+	"\x04code\x18\x02 \x01(\x05R\x04code\x12\x10\n" +
+	"\x03msg\x18\x03 \x01(\tR\x03msgB\aZ\x05/smsgb\x06proto3"
 
 var (
 	file_smsg_server_msg_proto_rawDescOnce sync.Once
@@ -95,9 +163,10 @@ func file_smsg_server_msg_proto_rawDescGZIP() []byte {
 	return file_smsg_server_msg_proto_rawDescData
 }
 
-var file_smsg_server_msg_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_smsg_server_msg_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_smsg_server_msg_proto_goTypes = []any{
 	(*NoticeSessionClosed)(nil), // 0: smsg.NoticeSessionClosed
+	(*ErrCode)(nil),             // 1: smsg.ErrCode
 }
 var file_smsg_server_msg_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -118,7 +187,7 @@ func file_smsg_server_msg_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_smsg_server_msg_proto_rawDesc), len(file_smsg_server_msg_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

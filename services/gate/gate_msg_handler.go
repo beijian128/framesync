@@ -23,11 +23,11 @@ func initGateMsgRoute(app *appframe.GateApplication) {
 
 }
 
-func GetAnyRawMessageRouter(f func(s *session, msgid uint32, data []byte, extParam int64)) appframe.GateSessionRawMsgRouter {
-	return func(sid uint64, msgid uint32, data []byte, extParam int64) {
+func GetAnyRawMessageRouter(f func(s *session, msgId uint32, data []byte, extParam int64)) appframe.GateSessionRawMsgRouter {
+	return func(sid uint64, msgId uint32, data []byte, extParam int64) {
 		s, ok := SessionMgrInstance.getSession(sid)
 		if ok {
-			f(s, msgid, data, extParam)
+			f(s, msgId, data, extParam)
 		}
 	}
 }

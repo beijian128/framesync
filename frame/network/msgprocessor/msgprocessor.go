@@ -13,34 +13,22 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// ConnectHandler ...
 type ConnectHandler func(connection.Connection)
 
-// CloseHandler ...
 type CloseHandler func(connection.Connection)
 
-// BytesHandler ...
-type BytesHandler func(conn connection.Connection, ext any, msgid uint32, bytes []byte)
+type BytesHandler func(conn connection.Connection, ext any, msgId uint32, bytes []byte)
 
-// MsgHandler ...
-type MsgHandler func(conn connection.Connection, ext any, msgid uint32, bytes []byte, msg any)
+type MsgHandler func(conn connection.Connection, ext any, msgId uint32, bytes []byte, msg any)
 
-// MsgProcessor 消息处理者
 type MsgProcessor interface {
-	// on read gorutine decode扩展数据
 	OnDecodeExt(extData []byte) (ext any, err error)
-	// on write gorutine encode扩展数据
 	OnEncodeExt(ext any) (extData []byte, err error)
-	// on read gorutine
-	// 连接
 	OnConnect(conn connection.Connection)
-	// 断开
 	OnClose(conn connection.Connection)
-	// 消息处理函数
-	OnMessage(conn connection.Connection, ext any, msgid uint32, msgData []byte) error
+	OnMessage(conn connection.Connection, ext any, msgId uint32, msgData []byte) error
 }
 
-// GetMsgHandler 获取消息处理函数
 type GetMsgHandler interface {
 	GetMsgHandler(typ reflect.Type) (MsgHandler, bool)
 }
@@ -92,7 +80,7 @@ func RegisterMessageNameType(msgName string, msgType reflect.Type) (uint32, erro
 	msgID2Name[id] = msgName
 
 	logrus.WithFields(logrus.Fields{
-		"msgid":   id,
+		"msgId":   id,
 		"msgtype": msgType,
 		"msgName": msgName,
 	}).Debug("RegisterMessage")
