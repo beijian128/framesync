@@ -2,14 +2,14 @@ package gate
 
 import (
 	"github.com/beijian128/framesync/frame/appframe"
-	"github.com/beijian128/framesync/proto/smsg"
-	"github.com/beijian128/framesync/services"
 )
 
 type session struct {
 	appframe.GateSession
-	userid  uint64
-	account string
+	userid uint64
+	x      int32
+	y      int32
+	color  string
 }
 
 func newSession() *session {
@@ -64,7 +64,7 @@ func (sm *sessionManager) getSession(sid uint64) (*session, bool) {
 }
 
 func (p *sessionManager) execByEverySession(f func(*session)) {
-	for _, s := range p.uid2session {
+	for _, s := range p.sid2session {
 		f(s)
 	}
 }
@@ -78,13 +78,15 @@ func initSessionManager(app *appframe.GateApplication) *sessionManager {
 
 	// 监听 session 的开启和关闭事件.
 	app.ListenSessionEvent(func(sid uint64) {
-		sm.addSession(app.GetSession(sid))
+		s := sm.addSession(app.GetSession(sid))
+		FrameSyncInstance.OnAddSession(s)
 	}, func(sid uint64) {
-		if _, ok := sm.getSession(sid); ok {
-			// 通知 lobby 玩家断开连接.
-			app.GetService(services.ServiceType_Lobby).SendMsg(&smsg.NoticeSessionClosed{
-				Session: sid,
-			})
+		if s, ok := sm.getSession(sid); ok {
+			//// 通知 lobby 玩家断开连接.
+			//app.GetService(services.ServiceType_Lobby).SendMsg(&smsg.NoticeSessionClosed{
+			//	Session: sid,
+			//})
+			FrameSyncInstance.RemoveSession(s)
 			sm.removeSession(sid)
 		}
 	})

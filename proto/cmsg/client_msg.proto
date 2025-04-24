@@ -6,39 +6,30 @@ option go_package = "/cmsg";
 
 package cmsg;
 
-enum Code{
-  OK = 0;
-  Unknown = 1;
+
+// ================== 输入指令 ==================
+message InputCommand {
+  bool up = 1;            // W键
+  bool left = 2;          // A键
+  bool down = 3;          // S键
+  bool right = 4;         // D键
 }
 
-// 登录服务器并进入聊天室
-message CReqLogin {
-  string account = 1;
+// ================== 玩家指令集 ==================
+message PlayerInput {
+  uint64 playerId = 1;
+  repeated InputCommand commands = 2; // 该玩家的所有指令
 }
 
-message SRespLogin {
-  Code code = 1;
+// 新玩家刚进入，同步一次状态
+message PlayerEnter{
+  uint64 playerId = 1;
+  int32 x = 2;
+  int32 y = 3;
+  string color = 4;
 }
 
-// 发送聊天消息
-message CReqSendChatMessage{
-  string text = 1;
-}
-
-message SRespSendChatMessage{
-  Code code = 1;
-}
-
-// 有其他玩家进入聊天室
-message SNotifyUserEnter{
-    string account = 1;
-}
-// 有其他玩家离开聊天室
-message SNotifyUserLeave{
-    string account = 1;
-}
-// 同步其他玩家的聊天消息
-message SNotifyUserChatMessage{
-    string account = 1;
-    string text = 2;
+// 某个玩家离开
+message PlayerLeave{
+  uint64 playerId = 1;
 }

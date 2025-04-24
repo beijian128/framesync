@@ -3,20 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>帧同步Demo</title>
+    <title>帧同步DEMO</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             margin: 0;
-            overflow: hidden;
-            background-color: #222;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
-        canvas {
-            display: block;
+        #game-container {
+            width: 800px;
+            height: 600px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            position: relative;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .player {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        #status {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        #controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #players-list {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9e9e9;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<script src="game.js"></script>
+<h1>帧同步DEMO</h1>
+<div id="status">未连接</div>
+<div id="controls">
+    <button id="connectBtn">连接服务器</button>
+    <button id="disconnectBtn" disabled>断开连接</button>
+</div>
+<div id="game-container"></div>
+<div id="players-list">
+    <h3>在线玩家:</h3>
+    <ul id="players"></ul>
+</div>
+
+<script>
+    // 消息类型定义
+    const MessageType = {
+        PLAYER_JOIN: 2097804892,
+        PLAYER_LEAVE: 2948349165,
+        PLAYER_INPUT: 782998102,
+        FRAME_SYNC: 2511531309
+    };
+
+    // 玩家类
+    class Player {
+        constructor(id = 0, color, x = 400, y = 300) {
+            this.id = id;
+            this.color = color;
+            this.x = x;
+            this.y = y;
+            this.element = null;
+            this.createElement();
+        }
+
+        createElement() {
+            this.element = document.createElement('div');
+            this.element.className = 'player';
+            this.element.style.backgroundColor = this.color;
+            this.element.style.left = `${this.x}px`;
+            this.element.style.top = `${this.y}px`;
+            this.element.textContent = this.id.toString().slice(-2);
+            document.getElementById('game-container').appendChild(this.element);
+        }
+
+        updatePosition(x, y) {
+            this.x = x;
+            this.y = y;
+            if (this.element) {
+                this.element.style.left = `${x}px`;
+                this.element.style.top = `${y}px`;
+            }
+        }
+
+        remove() {
+            if (this.element && this.element.parentNode) {
+                this.element.parentNode.removeChild(this.element);
+            }
+        }
+    }
+
+    // 游戏客户端类
+    class GameClient {
+        constructor() {
+            this.ws = null;
+            this.players = new Map();
+            this.isConnected = false;
+            this.setupEventListeners();
+        }
+
+        setupEventListeners() {
+            document.getElementById('connectBtn').addEventListener('click', () => this.connect());
+            document.getElementById('disconnectBtn').addEventListener('click', () => this.disconnect());
+
+            // 键盘输入监听
+            document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+            document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+        }
+
+        connect() {
+            if (this.isConnected) return;
+
+            this.ws = new WebSocket('ws://localhost:8002');
+            this.ws.binaryType = 'arraybuffer';
+
+            this.ws.onopen = () => {
+                this.isConnected = true;
+                document.getElementById('status').textContent = '已连接';
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+                console.log('WebSocket连接已建立');
+            };
+
+            this.ws.onmessage = (event) => {
+                this.handleMessage(event.data);
+            };
+
+            this.ws.onclose = () => {
+                this.isConnected = false;
+                document.getElementById('status').textContent = '连接已断开';
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                console.log('WebSocket连接已关闭');
+                this.cleanup();
+            };
+
+            this.ws.onerror = (error) => {
+                console.error('WebSocket错误:', error);
+            };
+        }
+
+        disconnect() {
+            if (this.ws) {
+                this.ws.close();
+            }
+        }
+
+        cleanup() {
+            // 清除所有玩家
+            this.players.forEach(player => player.remove());
+            this.players.clear();
+        }
+
+        handleMessage(data) {
+            // 解析消息头
+            const dataView = new DataView(data);
+            const jsonLength = dataView.getUint16(0);
+            const messageType = dataView.getUint32(2);
+
+            // 解析JSON数据
+            const jsonStr = new TextDecoder().decode(data.slice(6, 6 + jsonLength));
+            const message = JSON.parse(jsonStr);
+
+            console.log('收到消息:',data,dataView,jsonLength, messageType, message);
+
+            switch (messageType) {
+                case MessageType.PLAYER_JOIN:
+                    this.handlePlayerJoin(message);
+                    break;
+                case MessageType.PLAYER_LEAVE:
+                    this.handlePlayerLeave(message);
+                    break;
+                case MessageType.FRAME_SYNC:
+                    this.handleFrameSync(message);
+                    break;
+                default:
+                    console.warn('未知消息类型:', messageType);
+            }
+        }
+
+        sendMessage(type, data) {
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+            const jsonStr = JSON.stringify(data);
+            const jsonLength = jsonStr.length;
+
+            // 创建消息缓冲区 (6字节头部 + JSON数据)
+            const buffer = new ArrayBuffer(6 + jsonLength);
+            const dataView = new DataView(buffer);
+
+            // 写入消息头
+            dataView.setUint16(0, jsonLength);  // 2字节JSON长度
+            dataView.setUint32(2, type);       // 4字节消息类型
+
+            // 写入JSON数据
+            const encoder = new TextEncoder();
+            const jsonData = encoder.encode(jsonStr);
+            const uint8Array = new Uint8Array(buffer);
+            uint8Array.set(jsonData, 6);
+
+            this.ws.send(buffer);
+        }
+
+        handlePlayerJoin(message) {
+            const { playerId, color, x, y } = message;
+
+            // 创建或更新玩家
+            if (!this.players.has(playerId)) {
+                const player = new Player(playerId, color, x, y);
+                this.players.set(playerId, player);
+            }
+
+            this.updatePlayersList();
+        }
+
+        handlePlayerLeave(message) {
+            const { playerId } = message;
+            if (this.players.has(playerId)) {
+                const player = this.players.get(playerId);
+                player.remove();
+                this.players.delete(playerId);
+            }
+
+            this.updatePlayersList();
+        }
+
+        handleFrameSync(frameData) {
+            // 1. 解析服务端下发的指令数据
+            const playerInput = frameData;
+
+            // 2. 获取或创建玩家对象
+            let player = this.players.get(playerInput.playerId);
+            if (!player) {
+                player = new Player(
+                    playerInput.playerId, // 确保playerId是字符串
+                    this.generateRandomColor(),      // 随机颜色
+                    400,                            // 初始X位置（画面中心）
+                    300                             // 初始Y位置
+                );
+                this.players.set(playerInput.playerId, player);
+            }
+
+            // 3. 应用所有指令到玩家位置
+            const speed = 5; // 移动速度
+            playerInput.commands.forEach(cmd => {
+                if (cmd.up) player.y -= speed;
+                if (cmd.down) player.y += speed;
+                if (cmd.left) player.x -= speed;
+                if (cmd.right) player.x += speed;
+
+                // 边界检查（可选）
+                player.x = Math.max(0, Math.min(800 - 30, player.x)); // 30是玩家宽度
+                player.y = Math.max(0, Math.min(600 - 30, player.y));
+
+                // 更新玩家位置
+                player.updatePosition(player.x, player.y);
+            });
+
+            // 4. 更新玩家列表显示
+            this.updatePlayersList();
+        }
+
+// 生成随机颜色（用于新玩家）
+        generateRandomColor() {
+            return `#${Math.floor(Math.random()*16777215).toString(16).padStart(6,'0')}`;
+        }
+
+        handleKeyDown(e) {
+            console.log('handleKeyDown', e);
+            if (!this.isConnected) return;
+
+            // 只发送输入指令，不做任何本地处理
+            const input = {
+                up: e.key === 'w' || e.key === 'W',
+                down: e.key === 's' || e.key === 'S',
+                left: e.key === 'a' || e.key === 'A',
+                right: e.key === 'd' || e.key === 'D'
+            };
+
+            // 发送输入指令到服务器
+            this.sendMessage(MessageType.PLAYER_INPUT, input);
+        }
+
+        handleKeyUp(e) {
+            if (!this.isConnected) return;
+
+            // 只发送输入指令，不做任何本地处理
+            const input = {
+                up: false,
+                down: false,
+                left: false,
+                right: false
+            };
+
+            switch (e.key.toLowerCase()) {
+                case 'w': input.up = false; break;
+                case 's': input.down = false; break;
+                case 'a': input.left = false; break;
+                case 'd': input.right = false; break;
+                default: return;
+            }
+
+            // 发送输入指令到服务器
+            this.sendMessage(MessageType.PLAYER_INPUT, input);
+        }
+
+        updatePlayersList() {
+            const playersList = document.getElementById('players');
+            playersList.innerHTML = '';
+
+            this.players.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = `玩家 ${player.id} (${player.x}, ${player.y})`;
+                playersList.appendChild(li);
+            });
+        }
+    }
+
+    // 初始化游戏客户端
+    const gameClient = new GameClient();
+</script>
 </body>
 </html>

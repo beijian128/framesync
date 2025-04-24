@@ -8,7 +8,6 @@ import (
 	"github.com/beijian128/framesync/frame/log"
 	"github.com/beijian128/framesync/frame/util"
 	"github.com/beijian128/framesync/services/gate"
-	"github.com/beijian128/framesync/services/lobby"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"sync"
@@ -107,21 +106,6 @@ func main() {
 			app.Run()
 		})
 	}
-
-	//lobby
-	wg.Add(1)
-	util.SafeGo(func() {
-		defer wg.Done()
-		app, err := appframe.NewApplication(*netconfigFile, findOneNode(lobbyName))
-		if err != nil {
-			logrus.WithField("name", lobbyName).WithError(err).Panic("New lobby app fail")
-		}
-		err = lobby.InitLobbySvr(app, *appconfigFile)
-		if err != nil {
-			logrus.WithField("name", lobbyName).WithError(err).Panic("Init lobbysvr fail")
-		}
-		app.Run()
-	})
 
 	wg.Add(1)
 	go func() {

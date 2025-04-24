@@ -3,8 +3,6 @@ package gate
 import (
 	"github.com/beijian128/framesync/frame/appframe"
 	"github.com/beijian128/framesync/frame/framework/netframe"
-	"github.com/beijian128/framesync/proto/cmsg"
-	"github.com/beijian128/framesync/services"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
@@ -17,9 +15,11 @@ func initGateMsgRoute(app *appframe.GateApplication) {
 	logrus.Info("------------------initGateMsgRoute ---------------------")
 
 	//lobby
-	lobby := app.GetService(services.ServiceType_Lobby)
-	RouteSessionRowMsg(app, (*cmsg.CReqLogin)(nil), lobby)
-	RouteSessionRowMsg(app, (*cmsg.CReqSendChatMessage)(nil), lobby)
+	//lobby := app.GetService(services.ServiceType_Lobby)
+	//RouteSessionRowMsg(app, (*cmsg.CReqLogin)(nil), lobby)
+	//RouteSessionRowMsg(app, (*cmsg.CReqSendChatMessage)(nil), lobby)
+
+	appframe.ListenGateSessionMsgSugar(app, FrameSyncInstance.OnInputCommand)
 
 }
 

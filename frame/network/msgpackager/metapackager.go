@@ -174,8 +174,7 @@ func (p *metaPackager) ReadMsg(reader io.Reader) (msgId uint32, extData []byte, 
 }
 
 // WriteMsg ...
-func (p *metaPackager) WriteMsg(writer io.Writer, id uint32, extdata []byte, msgdata []byte) error {
-
+func (p *metaPackager) WriteMsg(writer io.Writer, id uint32, extData []byte, msgdata []byte) error {
 	msgLen := uint32(len(msgdata))
 
 	if msgLen > p.msgMaxLen {
@@ -183,8 +182,8 @@ func (p *metaPackager) WriteMsg(writer io.Writer, id uint32, extdata []byte, msg
 	}
 
 	var extLen uint32
-	if p.extMaxLen != 0 && extdata != nil {
-		extLen = uint32(len(extdata))
+	if p.extMaxLen != 0 && extData != nil {
+		extLen = uint32(len(extData))
 	}
 
 	// new buffer
@@ -196,8 +195,9 @@ func (p *metaPackager) WriteMsg(writer io.Writer, id uint32, extdata []byte, msg
 
 	// write ext
 	if extLen > 0 {
-		copy(buffer[pos:], extdata)
+		copy(buffer[pos:], extData)
 		pos = pos + extLen
+
 	}
 
 	// write msg

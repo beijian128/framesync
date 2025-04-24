@@ -7,6 +7,7 @@ import (
 	"github.com/beijian128/framesync/frame/framework/netcluster"
 	"github.com/beijian128/framesync/services"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 	_ "net/http/pprof"
 )
 
@@ -33,6 +34,9 @@ func InitGateSvr(app *appframe.GateApplication, cfgFile string) error {
 	initGateMsgHandler(app)
 
 	app.OnExitHandler(Close)
+	app.OnRunHandler(func() {
+		FrameSyncInstance.StartSync(context.Background())
+	})
 	return nil
 }
 

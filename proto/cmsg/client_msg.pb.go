@@ -23,74 +23,31 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Code int32
-
-const (
-	Code_OK      Code = 0
-	Code_Unknown Code = 1
-)
-
-// Enum value maps for Code.
-var (
-	Code_name = map[int32]string{
-		0: "OK",
-		1: "Unknown",
-	}
-	Code_value = map[string]int32{
-		"OK":      0,
-		"Unknown": 1,
-	}
-)
-
-func (x Code) Enum() *Code {
-	p := new(Code)
-	*p = x
-	return p
-}
-
-func (x Code) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Code) Descriptor() protoreflect.EnumDescriptor {
-	return file_cmsg_client_msg_proto_enumTypes[0].Descriptor()
-}
-
-func (Code) Type() protoreflect.EnumType {
-	return &file_cmsg_client_msg_proto_enumTypes[0]
-}
-
-func (x Code) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Code.Descriptor instead.
-func (Code) EnumDescriptor() ([]byte, []int) {
-	return file_cmsg_client_msg_proto_rawDescGZIP(), []int{0}
-}
-
-// 登录服务器并进入聊天室
-type CReqLogin struct {
+// ================== 输入指令 ==================
+type InputCommand struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Account       string                 `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	Up            bool                   `protobuf:"varint,1,opt,name=up,proto3" json:"up,omitempty"`       // W键
+	Left          bool                   `protobuf:"varint,2,opt,name=left,proto3" json:"left,omitempty"`   // A键
+	Down          bool                   `protobuf:"varint,3,opt,name=down,proto3" json:"down,omitempty"`   // S键
+	Right         bool                   `protobuf:"varint,4,opt,name=right,proto3" json:"right,omitempty"` // D键
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CReqLogin) Reset() {
-	*x = CReqLogin{}
+func (x *InputCommand) Reset() {
+	*x = InputCommand{}
 	mi := &file_cmsg_client_msg_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CReqLogin) String() string {
+func (x *InputCommand) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CReqLogin) ProtoMessage() {}
+func (*InputCommand) ProtoMessage() {}
 
-func (x *CReqLogin) ProtoReflect() protoreflect.Message {
+func (x *InputCommand) ProtoReflect() protoreflect.Message {
 	mi := &file_cmsg_client_msg_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -102,39 +59,62 @@ func (x *CReqLogin) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CReqLogin.ProtoReflect.Descriptor instead.
-func (*CReqLogin) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputCommand.ProtoReflect.Descriptor instead.
+func (*InputCommand) Descriptor() ([]byte, []int) {
 	return file_cmsg_client_msg_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CReqLogin) GetAccount() string {
+func (x *InputCommand) GetUp() bool {
 	if x != nil {
-		return x.Account
+		return x.Up
 	}
-	return ""
+	return false
 }
 
-type SRespLogin struct {
+func (x *InputCommand) GetLeft() bool {
+	if x != nil {
+		return x.Left
+	}
+	return false
+}
+
+func (x *InputCommand) GetDown() bool {
+	if x != nil {
+		return x.Down
+	}
+	return false
+}
+
+func (x *InputCommand) GetRight() bool {
+	if x != nil {
+		return x.Right
+	}
+	return false
+}
+
+// ================== 玩家指令集 ==================
+type PlayerInput struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          Code                   `protobuf:"varint,1,opt,name=code,proto3,enum=cmsg.Code" json:"code,omitempty"`
+	PlayerId      uint64                 `protobuf:"varint,1,opt,name=playerId,proto3" json:"playerId,omitempty"`
+	Commands      []*InputCommand        `protobuf:"bytes,2,rep,name=commands,proto3" json:"commands,omitempty"` // 该玩家的所有指令
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SRespLogin) Reset() {
-	*x = SRespLogin{}
+func (x *PlayerInput) Reset() {
+	*x = PlayerInput{}
 	mi := &file_cmsg_client_msg_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SRespLogin) String() string {
+func (x *PlayerInput) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SRespLogin) ProtoMessage() {}
+func (*PlayerInput) ProtoMessage() {}
 
-func (x *SRespLogin) ProtoReflect() protoreflect.Message {
+func (x *PlayerInput) ProtoReflect() protoreflect.Message {
 	mi := &file_cmsg_client_msg_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -146,40 +126,50 @@ func (x *SRespLogin) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SRespLogin.ProtoReflect.Descriptor instead.
-func (*SRespLogin) Descriptor() ([]byte, []int) {
+// Deprecated: Use PlayerInput.ProtoReflect.Descriptor instead.
+func (*PlayerInput) Descriptor() ([]byte, []int) {
 	return file_cmsg_client_msg_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *SRespLogin) GetCode() Code {
+func (x *PlayerInput) GetPlayerId() uint64 {
 	if x != nil {
-		return x.Code
+		return x.PlayerId
 	}
-	return Code_OK
+	return 0
 }
 
-// 发送聊天消息
-type CReqSendChatMessage struct {
+func (x *PlayerInput) GetCommands() []*InputCommand {
+	if x != nil {
+		return x.Commands
+	}
+	return nil
+}
+
+// 新玩家刚进入，同步一次状态
+type PlayerEnter struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	PlayerId      uint64                 `protobuf:"varint,1,opt,name=playerId,proto3" json:"playerId,omitempty"`
+	X             int32                  `protobuf:"varint,2,opt,name=x,proto3" json:"x,omitempty"`
+	Y             int32                  `protobuf:"varint,3,opt,name=y,proto3" json:"y,omitempty"`
+	Color         string                 `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CReqSendChatMessage) Reset() {
-	*x = CReqSendChatMessage{}
+func (x *PlayerEnter) Reset() {
+	*x = PlayerEnter{}
 	mi := &file_cmsg_client_msg_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CReqSendChatMessage) String() string {
+func (x *PlayerEnter) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CReqSendChatMessage) ProtoMessage() {}
+func (*PlayerEnter) ProtoMessage() {}
 
-func (x *CReqSendChatMessage) ProtoReflect() protoreflect.Message {
+func (x *PlayerEnter) ProtoReflect() protoreflect.Message {
 	mi := &file_cmsg_client_msg_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -191,39 +181,61 @@ func (x *CReqSendChatMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CReqSendChatMessage.ProtoReflect.Descriptor instead.
-func (*CReqSendChatMessage) Descriptor() ([]byte, []int) {
+// Deprecated: Use PlayerEnter.ProtoReflect.Descriptor instead.
+func (*PlayerEnter) Descriptor() ([]byte, []int) {
 	return file_cmsg_client_msg_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CReqSendChatMessage) GetText() string {
+func (x *PlayerEnter) GetPlayerId() uint64 {
 	if x != nil {
-		return x.Text
+		return x.PlayerId
+	}
+	return 0
+}
+
+func (x *PlayerEnter) GetX() int32 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *PlayerEnter) GetY() int32 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *PlayerEnter) GetColor() string {
+	if x != nil {
+		return x.Color
 	}
 	return ""
 }
 
-type SRespSendChatMessage struct {
+// 某个玩家离开
+type PlayerLeave struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          Code                   `protobuf:"varint,1,opt,name=code,proto3,enum=cmsg.Code" json:"code,omitempty"`
+	PlayerId      uint64                 `protobuf:"varint,1,opt,name=playerId,proto3" json:"playerId,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SRespSendChatMessage) Reset() {
-	*x = SRespSendChatMessage{}
+func (x *PlayerLeave) Reset() {
+	*x = PlayerLeave{}
 	mi := &file_cmsg_client_msg_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SRespSendChatMessage) String() string {
+func (x *PlayerLeave) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SRespSendChatMessage) ProtoMessage() {}
+func (*PlayerLeave) ProtoMessage() {}
 
-func (x *SRespSendChatMessage) ProtoReflect() protoreflect.Message {
+func (x *PlayerLeave) ProtoReflect() protoreflect.Message {
 	mi := &file_cmsg_client_msg_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -235,187 +247,38 @@ func (x *SRespSendChatMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SRespSendChatMessage.ProtoReflect.Descriptor instead.
-func (*SRespSendChatMessage) Descriptor() ([]byte, []int) {
+// Deprecated: Use PlayerLeave.ProtoReflect.Descriptor instead.
+func (*PlayerLeave) Descriptor() ([]byte, []int) {
 	return file_cmsg_client_msg_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *SRespSendChatMessage) GetCode() Code {
+func (x *PlayerLeave) GetPlayerId() uint64 {
 	if x != nil {
-		return x.Code
+		return x.PlayerId
 	}
-	return Code_OK
-}
-
-// 有其他玩家进入聊天室
-type SNotifyUserEnter struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Account       string                 `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SNotifyUserEnter) Reset() {
-	*x = SNotifyUserEnter{}
-	mi := &file_cmsg_client_msg_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SNotifyUserEnter) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SNotifyUserEnter) ProtoMessage() {}
-
-func (x *SNotifyUserEnter) ProtoReflect() protoreflect.Message {
-	mi := &file_cmsg_client_msg_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SNotifyUserEnter.ProtoReflect.Descriptor instead.
-func (*SNotifyUserEnter) Descriptor() ([]byte, []int) {
-	return file_cmsg_client_msg_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *SNotifyUserEnter) GetAccount() string {
-	if x != nil {
-		return x.Account
-	}
-	return ""
-}
-
-// 有其他玩家离开聊天室
-type SNotifyUserLeave struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Account       string                 `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SNotifyUserLeave) Reset() {
-	*x = SNotifyUserLeave{}
-	mi := &file_cmsg_client_msg_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SNotifyUserLeave) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SNotifyUserLeave) ProtoMessage() {}
-
-func (x *SNotifyUserLeave) ProtoReflect() protoreflect.Message {
-	mi := &file_cmsg_client_msg_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SNotifyUserLeave.ProtoReflect.Descriptor instead.
-func (*SNotifyUserLeave) Descriptor() ([]byte, []int) {
-	return file_cmsg_client_msg_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *SNotifyUserLeave) GetAccount() string {
-	if x != nil {
-		return x.Account
-	}
-	return ""
-}
-
-// 同步其他玩家的聊天消息
-type SNotifyUserChatMessage struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Account       string                 `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
-	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SNotifyUserChatMessage) Reset() {
-	*x = SNotifyUserChatMessage{}
-	mi := &file_cmsg_client_msg_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SNotifyUserChatMessage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SNotifyUserChatMessage) ProtoMessage() {}
-
-func (x *SNotifyUserChatMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_cmsg_client_msg_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SNotifyUserChatMessage.ProtoReflect.Descriptor instead.
-func (*SNotifyUserChatMessage) Descriptor() ([]byte, []int) {
-	return file_cmsg_client_msg_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *SNotifyUserChatMessage) GetAccount() string {
-	if x != nil {
-		return x.Account
-	}
-	return ""
-}
-
-func (x *SNotifyUserChatMessage) GetText() string {
-	if x != nil {
-		return x.Text
-	}
-	return ""
+	return 0
 }
 
 var File_cmsg_client_msg_proto protoreflect.FileDescriptor
 
 const file_cmsg_client_msg_proto_rawDesc = "" +
 	"\n" +
-	"\x15cmsg/client_msg.proto\x12\x04cmsg\"%\n" +
-	"\tCReqLogin\x12\x18\n" +
-	"\aaccount\x18\x01 \x01(\tR\aaccount\",\n" +
-	"\n" +
-	"SRespLogin\x12\x1e\n" +
-	"\x04code\x18\x01 \x01(\x0e2\n" +
-	".cmsg.CodeR\x04code\")\n" +
-	"\x13CReqSendChatMessage\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text\"6\n" +
-	"\x14SRespSendChatMessage\x12\x1e\n" +
-	"\x04code\x18\x01 \x01(\x0e2\n" +
-	".cmsg.CodeR\x04code\",\n" +
-	"\x10SNotifyUserEnter\x12\x18\n" +
-	"\aaccount\x18\x01 \x01(\tR\aaccount\",\n" +
-	"\x10SNotifyUserLeave\x12\x18\n" +
-	"\aaccount\x18\x01 \x01(\tR\aaccount\"F\n" +
-	"\x16SNotifyUserChatMessage\x12\x18\n" +
-	"\aaccount\x18\x01 \x01(\tR\aaccount\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text*\x1b\n" +
-	"\x04Code\x12\x06\n" +
-	"\x02OK\x10\x00\x12\v\n" +
-	"\aUnknown\x10\x01B\aZ\x05/cmsgb\x06proto3"
+	"\x15cmsg/client_msg.proto\x12\x04cmsg\"\\\n" +
+	"\fInputCommand\x12\x0e\n" +
+	"\x02up\x18\x01 \x01(\bR\x02up\x12\x12\n" +
+	"\x04left\x18\x02 \x01(\bR\x04left\x12\x12\n" +
+	"\x04down\x18\x03 \x01(\bR\x04down\x12\x14\n" +
+	"\x05right\x18\x04 \x01(\bR\x05right\"Y\n" +
+	"\vPlayerInput\x12\x1a\n" +
+	"\bplayerId\x18\x01 \x01(\x04R\bplayerId\x12.\n" +
+	"\bcommands\x18\x02 \x03(\v2\x12.cmsg.InputCommandR\bcommands\"[\n" +
+	"\vPlayerEnter\x12\x1a\n" +
+	"\bplayerId\x18\x01 \x01(\x04R\bplayerId\x12\f\n" +
+	"\x01x\x18\x02 \x01(\x05R\x01x\x12\f\n" +
+	"\x01y\x18\x03 \x01(\x05R\x01y\x12\x14\n" +
+	"\x05color\x18\x04 \x01(\tR\x05color\")\n" +
+	"\vPlayerLeave\x12\x1a\n" +
+	"\bplayerId\x18\x01 \x01(\x04R\bplayerIdB\aZ\x05/cmsgb\x06proto3"
 
 var (
 	file_cmsg_client_msg_proto_rawDescOnce sync.Once
@@ -429,26 +292,20 @@ func file_cmsg_client_msg_proto_rawDescGZIP() []byte {
 	return file_cmsg_client_msg_proto_rawDescData
 }
 
-var file_cmsg_client_msg_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_cmsg_client_msg_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_cmsg_client_msg_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_cmsg_client_msg_proto_goTypes = []any{
-	(Code)(0),                      // 0: cmsg.Code
-	(*CReqLogin)(nil),              // 1: cmsg.CReqLogin
-	(*SRespLogin)(nil),             // 2: cmsg.SRespLogin
-	(*CReqSendChatMessage)(nil),    // 3: cmsg.CReqSendChatMessage
-	(*SRespSendChatMessage)(nil),   // 4: cmsg.SRespSendChatMessage
-	(*SNotifyUserEnter)(nil),       // 5: cmsg.SNotifyUserEnter
-	(*SNotifyUserLeave)(nil),       // 6: cmsg.SNotifyUserLeave
-	(*SNotifyUserChatMessage)(nil), // 7: cmsg.SNotifyUserChatMessage
+	(*InputCommand)(nil), // 0: cmsg.InputCommand
+	(*PlayerInput)(nil),  // 1: cmsg.PlayerInput
+	(*PlayerEnter)(nil),  // 2: cmsg.PlayerEnter
+	(*PlayerLeave)(nil),  // 3: cmsg.PlayerLeave
 }
 var file_cmsg_client_msg_proto_depIdxs = []int32{
-	0, // 0: cmsg.SRespLogin.code:type_name -> cmsg.Code
-	0, // 1: cmsg.SRespSendChatMessage.code:type_name -> cmsg.Code
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 0: cmsg.PlayerInput.commands:type_name -> cmsg.InputCommand
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_cmsg_client_msg_proto_init() }
@@ -461,14 +318,13 @@ func file_cmsg_client_msg_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cmsg_client_msg_proto_rawDesc), len(file_cmsg_client_msg_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   7,
+			NumEnums:      0,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_cmsg_client_msg_proto_goTypes,
 		DependencyIndexes: file_cmsg_client_msg_proto_depIdxs,
-		EnumInfos:         file_cmsg_client_msg_proto_enumTypes,
 		MessageInfos:      file_cmsg_client_msg_proto_msgTypes,
 	}.Build()
 	File_cmsg_client_msg_proto = out.File

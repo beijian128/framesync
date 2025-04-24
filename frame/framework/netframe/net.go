@@ -26,8 +26,8 @@ const (
 )
 
 var (
-	gatePackager   = msgpackager.NewMetaPackager(0, 2, msgpackager.LittleEndian, true)
-	commonPackager = msgpackager.NewMetaPackager(1, 2, msgpackager.LittleEndian, false)
+	gatePackager   = msgpackager.NewMetaPackager(0, 2, msgpackager.BigEndian, true)
+	commonPackager = msgpackager.NewMetaPackager(1, 2, msgpackager.BigEndian, false)
 
 	heartBeatInterval  = time.Second * 30      // 心跳发送间隔时间
 	heartBeatWaitTime  = heartBeatInterval * 3 // 心跳超时间隔时间
