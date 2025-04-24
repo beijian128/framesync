@@ -88,6 +88,7 @@ func NewServer(
 	go func() {
 		var err error
 		if openTLS {
+			logrus.WithField("certFile", certFile).WithField("keyFile", keyFile).Info("Websocket server start, listen on ", addr)
 			err = s.httpSvr.ServeTLS(ln, certFile, keyFile)
 		} else {
 			err = s.httpSvr.Serve(ln)

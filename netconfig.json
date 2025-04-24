@@ -37,8 +37,9 @@
       },
       "disableWSCheckOrigin": true,
       "useWebSocket": true,
-      "disableCrypto": true,
-      "disableSeqChecker": true
+      "@openTLS": true,
+       "@certFile": "./******.crt",
+       "@keyFile": "./*******.key"
     },
     "lobby1": {
       "id": 401,
