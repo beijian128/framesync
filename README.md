@@ -1,8 +1,8 @@
-WebSocket 帧同步联机 Demo
+# WebSocket 帧同步联机 Demo
 
 这是一个基于 WebSocket 实现的轻量级帧同步联机演示项目，适用于浏览器游戏开发学习和测试。
 
-功能特性
+#### 功能特性
 
 • 基于 WebSocket 的实时通信
 
@@ -13,7 +13,7 @@ WebSocket 帧同步联机 Demo
 • 简单易用的演示界面
 
 
-快速开始
+## 快速开始
 
 本地部署
 
@@ -35,12 +35,12 @@ http://localhost:8080/web/
 
 可以打开多个浏览器窗口或标签页来模拟多个客户端联机效果。
 
-在线体验
+## 在线体验
 
 作者已在云端部署了一个服务，可直接访问体验：
 [https://beijian99.top/framesync/](https://beijian99.top/framesync/)
 
-技术栈
+## 技术栈
 
 • 后端：Go 
 
