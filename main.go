@@ -38,7 +38,7 @@ func main() {
 	}
 
 	_, err := log.InitLogrus(&log.Config{
-		Name:  "chat",
+		Name:  "framesync",
 		Level: 5,
 		Outputs: map[string]map[string]interface{}{
 			"file": {
