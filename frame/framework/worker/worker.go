@@ -45,19 +45,21 @@ func NewWorker(name string, maxWorkerLen int) IWorker {
 
 // Post 传递f到goroutine上执行
 func (w *Worker) Post(f func()) {
+	if w.closed.Load() {
+		return
+	}
 	w.fs <- f
 }
 
 func (w *Worker) Run() {
 	w.finiWg.Add(1)
-	w.closed.Store(true)
 
 	go func() {
 		defer util.Recover()
 		defer func() {
 			// 由于defer的调用比较耗内存，不能对外部的每个函数进行defer，所以采用了以下方式
 			// 挂了重启，关了退出
-			if w.closed.Load() {
+			if !w.closed.Load() {
 				logrus.Error("worker restart", w.name)
 				w.Run()
 			}

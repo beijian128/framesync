@@ -51,6 +51,8 @@ func main() {
 		return
 	}
 
+	util.HTTPPProf("0.0.0.0", 12345)
+
 	wg := sync.WaitGroup{}
 
 	wg.Add(1)
@@ -77,15 +79,12 @@ func main() {
 		app.Run()
 	})
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		time.AfterFunc(time.Second*1, func() {
-			logrus.Info("浏览器打开 http://localhost:8080/web/")
-		})
-		http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
-		http.ListenAndServe(":8080", nil)
-	}()
+	time.AfterFunc(time.Millisecond*300, func() {
+		logrus.Info("浏览器打开 http://localhost:8080/web/")
+		mux := http.NewServeMux()
+		mux.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
+		http.ListenAndServe(":8080", mux)
+	})
 
 	wg.Wait()
 }

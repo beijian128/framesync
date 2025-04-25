@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"github.com/beijian128/framesync/frame/appframe/request/protoreq"
@@ -173,33 +172,25 @@ func (a *Application) Run() {
 	})
 	a.onRun = nil
 
-	log := logrus.WithField("id", a.ID())
-	log.Infof("App (%s) running...", a.name)
+	logr := logrus.WithField("id", a.ID())
+	logr.Infof("App (%s) running...", a.name)
 
 	select {
 	case sig := <-c:
-		log.Infof("App (%s) exiting... signal:(%v)", a.name, sig)
+		logr.Infof("App (%s) exiting... signal:(%v)", a.name, sig)
 	case <-a.exitCh:
-		log.Infof("App (%s) exiting...", a.name)
+		logr.Infof("App (%s) exiting...", a.name)
 	}
 
 	atomic.StoreInt32(&a.exit, 1)
 
-	// 通知业务程序将要退出
-	onexits := a.onExit
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	a.ioWorker.Post(func() {
-		defer wg.Done()
-		for _, f := range onexits {
+	a.logicWorker.Post(func() {
+		for _, f := range a.onExit {
 			f()
 		}
 	})
-	a.onExit = nil
 
-	//等待close执行完毕
-	wg.Wait()
+	a.logicWorker.Fini()
 
 	a.reqc.WaitAllDone()
 
@@ -207,17 +198,14 @@ func (a *Application) Run() {
 	for i := len(a.onFinis) - 1; i >= 0; i-- {
 		a.onFinis[i]()
 	}
-	a.onFinis = nil
-
-	log.Infof("App Exit (%s)", a.name)
 
 	a.slave.Fini()
-	a.ioWorker.Fini()
-	a.logicWorker.Fini()
 
 	if a.closeLogger != nil {
 		a.closeLogger()
 	}
+
+	logr.Infof("App Exit (%s)", a.name)
 }
 
 // Exit 发送退出指令, 用于主动结束程序.
