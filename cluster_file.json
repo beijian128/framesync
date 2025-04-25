@@ -1,6 +1,6 @@
 {
   "masters": {
-    "master1": {
+    "master": {
       "id": 101,
       "type": 1,
       "addr": "127.0.0.1:4000",
@@ -21,7 +21,7 @@
     }
   },
   "slaves": {
-    "gate1": {
+    "gate": {
       "id": 201,
       "type": 2,
       "addr": "0.0.0.0:8002",
@@ -40,20 +40,6 @@
       "@openTLS": true,
        "@certFile": "./******.crt",
        "@keyFile": "./*******.key"
-    },
-    "lobby1": {
-      "id": 401,
-      "type": 4,
-      "log": {
-        "level": 5,
-        "outputs": {
-          "file": {
-            "path": "./logs",
-            "rotate": true,
-            "json": true
-          }
-        }
-      }
     }
   }
 }

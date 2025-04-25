@@ -3,7 +3,6 @@ package tcp
 import (
 	"errors"
 	"fmt"
-	"github.com/beijian128/framesync/frame/network/seqchecker"
 	"io"
 	"net"
 	"sync/atomic"
@@ -50,8 +49,6 @@ type Conn struct {
 
 	msgPackager  msgpackager.MsgPackager
 	msgProcessor msgprocessor.MsgProcessor
-
-	seqChecker *seqchecker.SeqIDChecker
 
 	localAddr  net.Addr
 	remoteAddr net.Addr
@@ -233,7 +230,6 @@ func (tcpConn *Conn) WriteLoop() {
 			data = msg.msg.([]byte)
 		}
 
-		// 加密消息
 		extData, err2 := tcpConn.msgProcessor.OnEncodeExt(msg.ext)
 		if err2 != nil {
 			tcpConn.logError(err2, "Encode message error, msgId: ", msgId)

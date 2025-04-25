@@ -12,23 +12,25 @@
 
 • 简单易用的演示界面
 
-
 ## 快速开始
 
 本地部署
 
 1. 克隆仓库：
+
 ```bash
 git clone https://github.com/beijian128/framesync.git
 cd framesync
 ```
 
 2. 运行服务端：
+
 ```bash
 go run main.go
 ```
 
 3. 在浏览器中访问：
+
 ```
 http://localhost:8080/web/
 ```
@@ -42,8 +44,11 @@ http://localhost:8080/web/
 
 ## 技术栈
 
-• 后端：Go 
+• 后端：Go
 
 • 前端：HTML5 + JavaScript
 
 • 通信协议：WebSocket
+
+
+**核心代码见** services/gate/framesync.go (服务端)    和 web/index.html （客户端）

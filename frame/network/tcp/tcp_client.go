@@ -2,7 +2,6 @@ package tcp
 
 import (
 	"fmt"
-	"github.com/beijian128/framesync/frame/network/seqchecker"
 	"net"
 	"sync"
 	"time"
@@ -29,16 +28,13 @@ type Client struct {
 	isClosed bool
 
 	conns map[net.Conn]*Conn
-	//connsCnt   *expvar.Int
+	
 	connsMutex sync.Mutex
 	connsWG    sync.WaitGroup
 
-	// msg packager
 	MsgPackager msgpackager.MsgPackager
-	// msg msgprocessor
-	MsgProcessor msgprocessor.MsgProcessor
 
-	seqChecker *seqchecker.SeqIDChecker
+	MsgProcessor msgprocessor.MsgProcessor
 }
 
 // NewTCPClient ...

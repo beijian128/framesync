@@ -36,7 +36,7 @@ func (fs *FrameSync) OnInputCommand(session appframe.GateSession, msg *cmsg.Inpu
 	fs.curFrame[session].Commands = append(fs.curFrame[session].Commands, msg)
 	speed := int32(3)
 	if msg.Down {
-		s.y += int32(speed)
+		s.y += speed
 	}
 	if msg.Up {
 		s.y -= speed
@@ -103,11 +103,9 @@ func (fs *FrameSync) RemoveSession(sess *session) {
 }
 
 func generateRandomColor() string {
-	// 初始化随机数种子（Go需要显式设置种子）
-	rand.Seed(time.Now().UnixNano())
-
+	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// 生成 0 到 16777215 之间的随机数（即 0x000000 到 0xFFFFFF）
-	colorValue := rand.Intn(16777216) // 注意：Intn 的上限是 16777216（不包含）
+	colorValue := randGen.Intn(16777216) // 注意：Intn 的上限是 16777216（不包含）
 
 	// 格式化为 6 位十六进制字符串，不足补零
 	return fmt.Sprintf("#%06x", colorValue)
